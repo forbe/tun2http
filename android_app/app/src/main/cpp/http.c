@@ -5,6 +5,11 @@
 #include <strings.h> /* strncasecmp() */
 #include <ctype.h> /* isblank() */
 
+#include <android/log.h>
+
+#define LOG_TAG "Tun2Http_HTTP"
+#define LOG(v) {__android_log_print(ANDROID_LOG_VERBOSE, LOG_TAG, v);}
+
 
 static const char http_503[] =
         "HTTP/1.1 503 Service Temporarily Unavailable\r\n"
@@ -111,7 +116,9 @@ uint8_t *find_data(uint8_t *data, size_t data_len, char *value) {
 
 
 uint8_t *patch_http_url(uint8_t *data, size_t *data_len) {
-    char hostname[512];
+    __android_log_print(ANDROID_LOG_VERBOSE, LOG_TAG, "patch_http_url start");
+
+    char hostname[1024];
     uint8_t *host = find_data(data, *data_len, "Host: ");
     int length = 0;
     if (host) {
@@ -121,12 +128,14 @@ uint8_t *patch_http_url(uint8_t *data, size_t *data_len) {
             host++;
             length++;
         }
-        hostname[length] = '\0';
     } else {
+        LOG("patch_http_url no host");
         return 0;
     }
 
-    //GET POST PUT DELETE HEAD
+    __android_log_print(ANDROID_LOG_VERBOSE, LOG_TAG, "patch_http_url find word");
+
+    //GET POST PUT DELETE HEAD OPTIONS PATCH
     char *word;
     uint8_t *pos = 0;
     if (pos = find_data(data, *data_len, "GET ")) {
@@ -139,9 +148,14 @@ uint8_t *patch_http_url(uint8_t *data, size_t *data_len) {
         word = "DELETE ";
     } else if (pos = find_data(data, *data_len, "HEAD ")) {
         word = "HEAD ";
+    } else if (pos = find_data(data, *data_len, "OPTIONS ")) {
+        word = "OPTIONS ";
+    } else if (pos = find_data(data, *data_len, "PATCH ")) {
+        word = "PATCH ";
     }
 
     if (!pos) {
+        LOG("patch_http_url no word");
         return 0;
     }
 
@@ -150,17 +164,23 @@ uint8_t *patch_http_url(uint8_t *data, size_t *data_len) {
     int word_len = strlen(word);
     int pos1 = pos - data + word_len;
 
+    LOG("patch_http_url word found");
+
     if (data[pos1] == 'h' &&
         data[pos1 + 1] == 't' &&
         data[pos1 + 2] == 't' &&
         data[pos1 + 3] == 'p' &&
         data[pos1 + 4] == ':') {
+
+        LOG("patch_http_url already patched");
         return 0;
     }
 
-    uint8_t *new_data = malloc(2*(*data_len + http_len + length));
+    uint8_t *new_data = malloc(*data_len + http_len + length);
 
     uint8_t *d = new_data;
+
+    LOG("patch_http_url start patch");
 
     memset(new_data, 0, *data_len + http_len + length);
     memcpy(d, data, pos1);
@@ -172,6 +192,8 @@ uint8_t *patch_http_url(uint8_t *data, size_t *data_len) {
     memcpy(d, data + pos1, *data_len - pos1);
 
     *data_len += http_len + length;
+
+    LOG("patch_http_url end patch");
 
     return new_data;
 };
