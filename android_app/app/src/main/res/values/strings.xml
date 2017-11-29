@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">tun2http</string>
+    <string name="notify_title">Proxy is running</string>
+    <string name="notify_msg">Proxy is running</string>
+    <string name="start">Start</string>
+    <string name="stop">Stop</string>
+    <string name="msg_start_failed">Start failed</string>
+    <string name="host_hint">Proxy address (host:port)</string>
+    <string name="enter_host">Enter valid ip v4 address</string>
+</resources>
