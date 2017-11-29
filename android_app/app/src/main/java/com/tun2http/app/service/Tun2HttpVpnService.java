@@ -167,6 +167,15 @@ public class Tun2HttpVpnService extends VpnService {
         builder.setMtu(mtu);
 
         // Add list of allowed applications
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            try {
+                builder.addAllowedApplication("com.android.chrome");
+            } catch (PackageManager.NameNotFoundException e) {
+                e.printStackTrace();
+            }
+        }
+
+        // Add list of allowed applications
         return builder;
     }
 
