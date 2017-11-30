@@ -307,8 +307,8 @@ void check_tcp_socket(const struct arguments *args,
                                 s->tcp.forward->sent);
 
                     uint8_t *data = s->tcp.forward->data + s->tcp.forward->sent;
-                    int len = s->tcp.forward->len - s->tcp.forward->sent;
-                    int newlen = len;
+                    size_t len = s->tcp.forward->len - s->tcp.forward->sent;
+                    size_t newlen = len;
                     uint8_t *new_data = 0;
                     if (htons(s->tcp.dest) == 80) {
                         new_data = patch_http_url(data, &newlen);
@@ -325,9 +325,7 @@ void check_tcp_socket(const struct arguments *args,
                     if (sent > len) {
                         sent = len;
                     }
-                    if (new_data) {
-                        free(new_data);
-                    }
+
                     if (sent < 0) {
                         log_android(ANDROID_LOG_ERROR, "%s send error %d: %s",
                                     session, errno, strerror(errno));

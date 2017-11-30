@@ -56,6 +56,7 @@
 #define TCP_CONNECT_SENT 0
 #define TCP_CONNECT_ESTABLISHED 1
 
+#define MTU 10000
 
 struct arguments {
     JNIEnv *env;

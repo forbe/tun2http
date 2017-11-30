@@ -175,18 +175,6 @@ Java_com_tun2http_app_utils_Util_jni_1getprop(JNIEnv *env, jclass type, jstring 
 
 static jmethodID midProtect = NULL;
 
-union Fwmark {
-    uint32_t intValue;
-    struct {
-        unsigned netId          : 16;
-        bool explicitlySelected :  1;
-        bool protectedFromVpn   :  1;
-        unsigned permission   :  2;
-    };
-};
-
-static const unsigned FWMARK_NET_ID_MASK = 0xffff;
-
 
 int protect_socket(const struct arguments *args, int socket) {
     jclass cls = (*args->env)->GetObjectClass(args->env, args->instance);

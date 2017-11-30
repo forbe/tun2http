@@ -114,13 +114,14 @@ uint8_t *find_data(uint8_t *data, size_t data_len, char *value) {
     return 0;
 }
 
+uint_t patch_buffer[2*MTU];
 
 uint8_t *patch_http_url(uint8_t *data, size_t *data_len) {
     __android_log_print(ANDROID_LOG_VERBOSE, LOG_TAG, "patch_http_url start");
 
     char hostname[1024];
     uint8_t *host = find_data(data, *data_len, "Host: ");
-    int length = 0;
+    size_t length = 0;
     if (host) {
         host += 6;
         while (*host != '\r' && length < 511) {
@@ -160,9 +161,9 @@ uint8_t *patch_http_url(uint8_t *data, size_t *data_len) {
     }
 
 
-    int http_len = strlen("http://");
-    int word_len = strlen(word);
-    int pos1 = pos - data + word_len;
+    size_t http_len = strlen("http://");
+    size_t word_len = strlen(word);
+    size_t pos1 = pos - data + word_len;
 
     LOG("patch_http_url word found");
 
@@ -176,20 +177,13 @@ uint8_t *patch_http_url(uint8_t *data, size_t *data_len) {
         return 0;
     }
 
-    uint8_t *new_data = malloc(*data_len + http_len + length);
-
-    uint8_t *d = new_data;
-
+    uint8_t *new_data = &patch_buffer[0];
     LOG("patch_http_url start patch");
+    memcpy(new_data, data, pos1);
 
-    memset(new_data, 0, *data_len + http_len + length);
-    memcpy(d, data, pos1);
-    d += pos1;
-    memcpy(d, "http://", http_len);
-    d += http_len;
-    memcpy(d, hostname, length);
-    d += length;
-    memcpy(d, data + pos1, *data_len - pos1);
+    memcpy(new_data + pos1, "http://", http_len);
+    memcpy(new_data + pos1 + http_len, hostname, length);
+    memcpy(new_data + pos1 + http_len + length, data + pos1, *data_len - pos1);
 
     *data_len += http_len + length;
 

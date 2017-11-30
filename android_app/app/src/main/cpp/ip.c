@@ -4,8 +4,9 @@
 int max_tun_msg = 0;
 extern int loglevel;
 
+
 uint16_t get_mtu() {
-    return 10000;
+    return MTU;
 }
 
 uint16_t get_default_mss(int version) {
