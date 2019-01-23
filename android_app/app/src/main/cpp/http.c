@@ -153,6 +153,26 @@ uint8_t *patch_http_url(uint8_t *data, size_t *data_len) {
         word = "OPTIONS ";
     } else if (pos = find_data(data, *data_len, "PATCH ")) {
         word = "PATCH ";
+    } else if (pos = find_data(data, *data_len, "HEAD ")) {
+        word = "HEAD ";
+    } else if (pos = find_data(data, *data_len, "TRACE ")) {
+        word = "TRACE ";
+    } else if (pos = find_data(data, *data_len, "PROPFIND ")) {
+        word = "PROPFIND ";
+    } else if (pos = find_data(data, *data_len, "MKCOL ")) {
+        word = "MKCOL ";
+    } else if (pos = find_data(data, *data_len, "COPY ")) {
+        word = "COPY ";
+    } else if (pos = find_data(data, *data_len, "MOVE ")) {
+        word = "MOVE ";
+    } else if (pos = find_data(data, *data_len, "LOCK ")) {
+        word = "LOCK ";
+    } else if (pos = find_data(data, *data_len, "UNLOCK ")) {
+        word = "UNLOCK ";
+    } else if (pos = find_data(data, *data_len, "LINK ")) {
+        word = "LINK ";
+    } else if (pos = find_data(data, *data_len, "UNLINK ")) {
+        word = "UNLINK ";
     }
 
     if (!pos) {

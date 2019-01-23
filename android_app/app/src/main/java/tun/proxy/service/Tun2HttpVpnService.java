@@ -1,6 +1,5 @@
-package com.tun2http.app.service;
+package tun.proxy.service;
 
-import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -19,53 +18,31 @@ import android.preference.PreferenceManager;
 import android.text.TextUtils;
 import android.util.Log;
 
-import com.tun2http.app.R;
-import com.tun2http.app.utils.IPUtil;
-import com.tun2http.app.utils.Util;
-
 import java.io.IOException;
-import java.math.BigInteger;
-import java.net.Inet4Address;
 import java.net.InetAddress;
-import java.net.InterfaceAddress;
-import java.net.NetworkInterface;
-import java.net.SocketException;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Enumeration;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
+import tun.proxy.MyApplication;
+import tun.proxy.R;
 
 public class Tun2HttpVpnService extends VpnService {
-    private static final String TAG = "Tun2Http.Service";
-    private static final String ACTION_START = "start";
-    private static final String ACTION_STOP = "stop";
     public static final String PREF_PROXY_HOST = "pref_proxy_host";
     public static final String PREF_PROXY_PORT = "pref_proxy_port";
     public static final String PREF_RUNNING = "pref_running";
-
-
-    private Tun2HttpVpnService.Builder lastBuilder = null;
-    private ParcelFileDescriptor vpn = null;
+    private static final String TAG = "Tun2Http.Service";
+    private static final String ACTION_START = "start";
+    private static final String ACTION_STOP = "stop";
+    private static volatile PowerManager.WakeLock wlInstance = null;
 
     static {
         System.loadLibrary("tun2http");
     }
 
-
-    private static volatile PowerManager.WakeLock wlInstance = null;
-
-    private native void jni_init();
-
-    private native void jni_start(int tun, boolean fwd53, int rcode, String proxyIp, int proxyPort);
-
-    private native void jni_stop(int tun);
-
-    private native int jni_get_mtu();
-
-    private native int jni_done();
-
+    private Tun2HttpVpnService.Builder lastBuilder = null;
+    private ParcelFileDescriptor vpn = null;
 
     synchronized private static PowerManager.WakeLock getLock(Context context) {
         if (wlInstance == null) {
@@ -76,26 +53,31 @@ public class Tun2HttpVpnService extends VpnService {
         return wlInstance;
     }
 
+    public static void start(Context context) {
+        Intent intent = new Intent(context, Tun2HttpVpnService.class);
+        intent.setAction(ACTION_START);
+        context.startService(intent);
+    }
+
+    public static void stop(Context context) {
+        Intent intent = new Intent(context, Tun2HttpVpnService.class);
+        intent.setAction(ACTION_STOP);
+        context.startService(intent);
+    }
+
+    private native void jni_init();
+
+    private native void jni_start(int tun, boolean fwd53, int rcode, String proxyIp, int proxyPort);
+
+    private native void jni_stop(int tun);
+
+    private native int jni_get_mtu();
+
+    private native void jni_done();
+
     @Override
     public IBinder onBind(Intent intent) {
         return new ServiceBinder();
-    }
-
-    public class ServiceBinder extends Binder {
-        @Override
-        public boolean onTransact(int code, Parcel data, Parcel reply, int flags)
-                throws RemoteException {
-            // see Implementation of android.net.VpnService.Callback.onTransact()
-            if (code == IBinder.LAST_CALL_TRANSACTION) {
-                onRevoke();
-                return true;
-            }
-            return super.onTransact(code, data, reply, flags);
-        }
-
-        public Tun2HttpVpnService getService() {
-            return Tun2HttpVpnService.this;
-        }
     }
 
     public boolean isRunning() {
@@ -121,7 +103,6 @@ public class Tun2HttpVpnService extends VpnService {
         }
         stopForeground(true);
     }
-
 
     @Override
     public void onRevoke() {
@@ -158,7 +139,6 @@ public class Tun2HttpVpnService extends VpnService {
         builder.addAddress(vpn6, 128);
 
         builder.addRoute("0.0.0.0", 0);
-
         builder.addRoute("0:0:0:0:0:0:0:0", 0);
 
         // MTU
@@ -169,7 +149,16 @@ public class Tun2HttpVpnService extends VpnService {
         // Add list of allowed applications
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             try {
-                builder.addAllowedApplication("com.android.chrome");
+                MyApplication app = (MyApplication) this.getApplication();
+                if (app.getVPNMode() == 0) {
+                    Set<String> disallow = app.getDisallowedApplication();
+                    Log.d(TAG, "disallowed:"  + disallow.size());
+                    builder.addDisallowedApplication(Arrays.asList(disallow.toArray(new String[0])));
+                } else {
+                    Set<String> allow = app.getAllowedApplication();
+                    Log.d(TAG, "allowed:" + allow.size());
+                    builder.addAllowedApplication(Arrays.asList(allow.toArray(new String[0])));
+                }
             } catch (PackageManager.NameNotFoundException e) {
                 e.printStackTrace();
             }
@@ -178,7 +167,6 @@ public class Tun2HttpVpnService extends VpnService {
         // Add list of allowed applications
         return builder;
     }
-
 
     private void startNative(ParcelFileDescriptor vpn) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
@@ -205,7 +193,6 @@ public class Tun2HttpVpnService extends VpnService {
         prefs.edit().putBoolean(PREF_RUNNING, false).apply();
     }
 
-
     private void stopVPN(ParcelFileDescriptor pfd) {
         Log.i(TAG, "Stopping");
         try {
@@ -229,14 +216,12 @@ public class Tun2HttpVpnService extends VpnService {
         Log.w(TAG, "Native error " + error + ": " + message);
     }
 
-
     private boolean isSupported(int protocol) {
         return (protocol == 1 /* ICMPv4 */ ||
                 protocol == 59 /* ICMPv6 */ ||
                 protocol == 6 /* TCP */ ||
                 protocol == 17 /* UDP */);
     }
-
 
     @Override
     public void onCreate() {
@@ -265,7 +250,6 @@ public class Tun2HttpVpnService extends VpnService {
         return START_STICKY;
     }
 
-
     @Override
     public void onDestroy() {
         Log.i(TAG, "Destroy");
@@ -283,6 +267,23 @@ public class Tun2HttpVpnService extends VpnService {
         jni_done();
 
         super.onDestroy();
+    }
+
+    public class ServiceBinder extends Binder {
+        @Override
+        public boolean onTransact(int code, Parcel data, Parcel reply, int flags)
+                throws RemoteException {
+            // see Implementation of android.net.VpnService.Callback.onTransact()
+            if (code == IBinder.LAST_CALL_TRANSACTION) {
+                onRevoke();
+                return true;
+            }
+            return super.onTransact(code, data, reply, flags);
+        }
+
+        public Tun2HttpVpnService getService() {
+            return Tun2HttpVpnService.this;
+        }
     }
 
     private class Builder extends VpnService.Builder {
@@ -326,6 +327,25 @@ public class Tun2HttpVpnService extends VpnService {
             return this;
         }
 
+        // min sdk 26
+        public Builder addAllowedApplication(List<String> packageList) throws PackageManager.NameNotFoundException {
+            //
+            for (String pkg : packageList) {
+                System.out.println("allowed:" + pkg);
+                addAllowedApplication(pkg);
+            }
+            return this;
+        }
+
+        public Builder addDisallowedApplication(List<String> packageList) throws PackageManager.NameNotFoundException {
+            //
+            for (String pkg : packageList) {
+                System.out.println("disallowed:" + pkg);
+                addDisallowedApplication(pkg);
+            }
+            return this;
+        }
+
         @Override
         public boolean equals(Object obj) {
             Builder other = (Builder) obj;
@@ -363,19 +383,5 @@ public class Tun2HttpVpnService extends VpnService {
 
             return true;
         }
-    }
-
-
-    public static void start(Context context) {
-        Intent intent = new Intent(context, Tun2HttpVpnService.class);
-        intent.setAction(ACTION_START);
-        context.startService(intent);
-    }
-
-
-    public static void stop(Context context) {
-        Intent intent = new Intent(context, Tun2HttpVpnService.class);
-        intent.setAction(ACTION_STOP);
-        context.startService(intent);
     }
 }

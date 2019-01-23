@@ -1,4 +1,4 @@
-package com.tun2http.app.utils;
+package tun.utils;
 
 /*
     This file is part of NetGuard.

@@ -1,4 +1,4 @@
-package com.tun2http.app.utils;
+package tun.utils;
 
 
 import android.util.Log;
