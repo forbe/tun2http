@@ -1,5 +1,8 @@
 Android 通信 Proxy 設定ツール
 =============
+
+Language/[English](https://github.com/raise-isayan/TunProxy/blob/master/Readme.md)
+
 このツールは、Android の VPNService 機能を利用した Proxy 設定ツールです。
 指定したアプリからの通信のみを取得することが可能です。
 
@@ -59,7 +62,8 @@ Disallow Application と Allow Application の２つのモードがあります�
 
 アプリ作成にあたりコードの大部分は以下のアプリをベースとして作成しました。
 
-* https://github.com/MengAndy/tun2http/
+* forked from MengAndy/tun2http
+    * https://github.com/MengAndy/tun2http/
 
 ## 開発環境
 

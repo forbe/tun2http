@@ -1,6 +1,8 @@
 Android HTTP traffic Proxy setting tool
 =============
 
+Language/[Japanese](https://github.com/raise-isayan/TunProxy/blob/master/Readme-ja.md)
+
 This tool is a proxy setting tool using Android VPNService.
 It is possible to acquire only HTTP traffic from the specified application.
 
@@ -61,7 +63,7 @@ Display application version
 Most of the code was created based on the following applications for creating applications.
 
 * forked from MengAndy/tun2http
-** https://github.com/MengAndy/tun2http/
+    * https://github.com/MengAndy/tun2http/
 
 ## Development environment
 
