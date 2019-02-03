@@ -19,7 +19,7 @@ When you start the TunProxy application, the following screen will be launched.
 ![Tun Proxy](images/TunProxy.png)
 
 * Proxy address (host:port)
-   * Specify the destination proxy server in the format ** IP address:port number **.
+   * Specify the destination proxy server in the format **IP address:port number**.
      The IP address must be described in IPv4 format.
 
 * [Start] button
@@ -35,7 +35,7 @@ Application settings can be made from the menu icon (![Menu](images/Menu.png)) a
 
 Configure VPN service settings.
 
-![Menu Settings](images/Menu-Settings.png) => ![Menu Settings](images/Menu-Settings-sub.png)
+![Menu Settings](images/Menu-Settings.png) => ![Menu Settings](images/Menu-Settings-app.png)
 
 There are two modes, Disallow Application and Allow Application, but you can not specify them at the same time.
 Because of this you will have to choose whether you want to run in either mode.

@@ -150,17 +150,17 @@ public class Tun2HttpVpnService extends VpnService {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             try {
                 MyApplication app = (MyApplication) this.getApplication();
-                if (app.getVPNMode() == 0) {
-                    Set<String> disallow = app.getDisallowedApplication();
+                if (app.loadVPNMode() == MyApplication.VPNMode.DISALLOW) {
+                    Set<String> disallow = app.loadVPNApplication(MyApplication.VPNMode.DISALLOW);
                     Log.d(TAG, "disallowed:"  + disallow.size());
                     builder.addDisallowedApplication(Arrays.asList(disallow.toArray(new String[0])));
                 } else {
-                    Set<String> allow = app.getAllowedApplication();
+                    Set<String> allow = app.loadVPNApplication(MyApplication.VPNMode.ALLOW);
                     Log.d(TAG, "allowed:" + allow.size());
                     builder.addAllowedApplication(Arrays.asList(allow.toArray(new String[0])));
                 }
             } catch (PackageManager.NameNotFoundException e) {
-                e.printStackTrace();
+                Log.e( TAG, e.getMessage(), e);
             }
         }
 

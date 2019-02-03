@@ -19,7 +19,7 @@ TunProxyアプリを起動すると以下の画面が起動します。
 ![Tun Proxy](images/TunProxy.png)
 
 * Proxy address (host:port)
-   * 接続先のプロキシサーバを ** IPアドレス:ポート番号 ** の形式で指定します。
+   * 接続先のプロキシサーバを **IPアドレス:ポート番号** の形式で指定します。
      IPアドレスはIPv4形式で記載する必要があります。
 
 * [Start] ボタン
@@ -35,7 +35,7 @@ TunProxyアプリを起動すると以下の画面が起動します。
 
 VPNの接続設定を行います。
 
-![Menu Settings](images/Menu-Settings.png) ⇒ ![Menu Settings](images/Menu-Settings-sub.png)
+![Menu Settings](images/Menu-Settings.png) ⇒ ![Menu Settings](images/Menu-Settings-app.png)
 
 Disallow Application と Allow Application の２つのモードがありますが、同時に指定することはできません。
 このためどちらのモードで動作させたいかを選択する必要があります。

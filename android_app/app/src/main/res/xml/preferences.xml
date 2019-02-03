@@ -9,23 +9,23 @@
 	<ListPreference
 			android:key="vpn_connection_mode"
 			android:title="@string/pref_vpn_connection_mode"
-			android:defaultValue="0"
+			android:defaultValue="DISALLOW"
 			android:entries="@array/pref_vpn_connection_name"
 			android:entryValues="@array/pref_vpn_connection_value"
 			android:negativeButtonText="@null"
 			android:positiveButtonText="@null"/>
 
 	<PreferenceScreen
-		android:key="allowed_application_list"
-		android:title="@string/pref_header_allowed_application_list"
-		android:layout_width="wrap_content"
-		android:layout_height="wrap_content" />
+			android:key="vpn_disallowed_application_list"
+			android:title="@string/pref_header_disallowed_application_list"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content" />
 
 	<PreferenceScreen
-		android:key="disallowed_application_list"
-		android:title="@string/pref_header_disallowed_application_list"
-		android:layout_width="wrap_content"
-		android:layout_height="wrap_content" />
+			android:key="vpn_allowed_application_list"
+			android:title="@string/pref_header_allowed_application_list"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content" />
 
 <!--
 	<MultiSelectListPreference

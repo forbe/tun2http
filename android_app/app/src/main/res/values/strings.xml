@@ -24,8 +24,8 @@
 		<item>Allowed Application</item>
 	</string-array>
 	<string-array name="pref_vpn_connection_value">
-		<item>0</item>
-		<item>1</item>
+		<item>DISALLOW</item>
+		<item>ALLOW</item>
 	</string-array>
 
 	<string name="pref_allowed_application_list">allowed application list</string>

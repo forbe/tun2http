@@ -170,7 +170,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
         statusHandler.removeCallbacks(statusRunnable);
-
         unbindService(serviceConnection);
     }
 

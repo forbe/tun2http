@@ -43,13 +43,13 @@ public class CertificateUtil {
                 }
             }
         } catch(IOException e){
-            e.printStackTrace();
+            Log.e( TAG, e.getMessage(), e);
         } catch(KeyStoreException e){
-            e.printStackTrace();
+            Log.e( TAG, e.getMessage(), e);
         } catch(NoSuchAlgorithmException e){
-            e.printStackTrace();
+            Log.e( TAG, e.getMessage(), e);
         } catch(CertificateException e){
-            e.printStackTrace();
+            Log.e( TAG, e.getMessage(), e);
         }
         return found;
     }
@@ -73,13 +73,13 @@ public class CertificateUtil {
                 rootCAList.add( cert );
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.e( TAG, e.getMessage(), e);
         } catch (KeyStoreException e) {
-            e.printStackTrace();
+            Log.e( TAG, e.getMessage(), e);
         } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
+            Log.e( TAG, e.getMessage(), e);
         } catch (CertificateException e) {
-            e.printStackTrace();
+            Log.e( TAG, e.getMessage(), e);
         }
         return rootCAList;
     }
@@ -108,9 +108,9 @@ public class CertificateUtil {
             Collections.sort( certList, new Comparator<X509Certificate>() {
                 @Override
                 public int compare(X509Certificate t1, X509Certificate t2) {
-                    String t1cn = CertificateUtil.getCommonName( t1.getIssuerX500Principal().getName() );
-                    String t2cn = CertificateUtil.getCommonName( t2.getIssuerX500Principal().getName() );
-                    return t1cn.compareToIgnoreCase( t2cn );
+                String t1cn = CertificateUtil.getCommonName( t1.getIssuerX500Principal().getName() );
+                String t2cn = CertificateUtil.getCommonName( t2.getIssuerX500Principal().getName() );
+                return t1cn.compareToIgnoreCase( t2cn );
                 }
             } );
             // ソート後
@@ -126,13 +126,13 @@ public class CertificateUtil {
             rootCAMap.put( "entry", rootCANameList.toArray( new String[0] ) );
             rootCAMap.put( "value", rootCAList.toArray( new String[0] ) );
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.e( TAG, e.getMessage(), e);
         } catch (KeyStoreException e) {
-            e.printStackTrace();
+            Log.e( TAG, e.getMessage(), e);
         } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
+            Log.e( TAG, e.getMessage(), e);
         } catch (CertificateException e) {
-            e.printStackTrace();
+            Log.e( TAG, e.getMessage(), e);
         }
         return rootCAMap;
     }
@@ -140,7 +140,6 @@ public class CertificateUtil {
     public static String encode(byte b[]) {
         return new String( b, StandardCharsets.ISO_8859_1 );
     }
-
     public static byte[] decode(String s) {
         return s.getBytes( StandardCharsets.ISO_8859_1 );
     }
@@ -153,7 +152,7 @@ public class CertificateUtil {
             intent.putExtra( KeyChain.EXTRA_CERTIFICATE, cert.getEncoded() );
             intent.putExtra( KeyChain.EXTRA_NAME,  getCommonName(cert.getIssuerDN().getName()));
         } catch (CertificateEncodingException e) {
-            e.printStackTrace();
+            Log.e( TAG, e.getMessage(), e);
         }
         return intent;
     }
@@ -203,12 +202,12 @@ public class CertificateUtil {
     }
 
     public static String getOrganization(String dn) {
-        String cn = "";
+        String on = "";
         Matcher m = CA_ORGANIZATION.matcher( dn );
         if (m.find()) {
-            cn = m.group( 1 );
+            on = m.group( 1 );
         }
-        return cn;
+        return on;
     }
 
 }

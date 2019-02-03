@@ -8,24 +8,18 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.preference.CheckBoxPreference;
-import android.preference.ListPreference;
-import android.preference.Preference;
-import android.preference.PreferenceFragment;
-import android.preference.PreferenceManager;
-import android.preference.PreferenceScreen;
+import android.preference.*;
 import android.view.MenuItem;
 
-import java.util.ArrayList;
-import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
-import tun.utils.CertificateUtil;
-
 public class SimplePreferenceFragment extends PreferenceFragment implements Preference.OnPreferenceClickListener {
+
+    public static final String VPN_CONNECTION_MODE = "vpn_connection_mode";
+    public static final String VPN_DISALLOWED_APPLICATION_LIST = "vpn_disallowed_application_list";
+    public static final String VPN_ALLOWED_APPLICATION_LIST = "vpn_allowed_application_list";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -34,35 +28,34 @@ public class SimplePreferenceFragment extends PreferenceFragment implements Pref
         setHasOptionsMenu(true);
 
         /* Allowed / Disallowed Application */
-        final ListPreference pkg_selection = (ListPreference) this.findPreference("vpn_connection_mode");
+        final ListPreference pkg_selection = (ListPreference) this.findPreference(VPN_CONNECTION_MODE);
         pkg_selection.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
             @Override
             public boolean onPreferenceChange(Preference preference, Object value) {
-                if (preference instanceof ListPreference) {
-                    ListPreference listPreference = (ListPreference) preference;
-                    int index = listPreference.findIndexOfValue((String) value);
+            if (preference instanceof ListPreference) {
+                ListPreference listPreference = (ListPreference) preference;
+                int index = listPreference.findIndexOfValue((String) value);
 
-                    PreferenceScreen disallow = (PreferenceScreen) findPreference("disallowed_application_list");
-                    PreferenceScreen allow = (PreferenceScreen) findPreference("allowed_application_list");
-                    disallow.setEnabled(index == 0);
-                    allow.setEnabled(index != 0);
+                PreferenceScreen disallow = (PreferenceScreen) findPreference(VPN_DISALLOWED_APPLICATION_LIST);
+                PreferenceScreen allow = (PreferenceScreen) findPreference(VPN_ALLOWED_APPLICATION_LIST);
+                disallow.setEnabled(index == 0);
+                allow.setEnabled(index != 0);
 
+                // Set the summary to reflect the new value.
+                preference.setSummary(index >= 0 ? listPreference.getEntries()[index] : null);
 
-                    // Set the summary to reflect the new value.
-                    preference.setSummary(index >= 0 ? listPreference.getEntries()[index] : null);
-
-                }
-                return true;
+            }
+            return true;
             }
         });
         pkg_selection.setSummary(pkg_selection.getEntry());
-        PreferenceScreen disallow = (PreferenceScreen) findPreference("disallowed_application_list");
-        PreferenceScreen allow = (PreferenceScreen) findPreference("allowed_application_list");
-        disallow.setEnabled(Integer.parseInt(pkg_selection.getValue()) == 0);
-        allow.setEnabled(Integer.parseInt(pkg_selection.getValue()) != 0);
+        PreferenceScreen disallow = (PreferenceScreen) findPreference(VPN_DISALLOWED_APPLICATION_LIST);
+        PreferenceScreen allow = (PreferenceScreen) findPreference(VPN_ALLOWED_APPLICATION_LIST);
+        disallow.setEnabled(MyApplication.VPNMode.DISALLOW.name().equals(pkg_selection.getValue()));
+        allow.setEnabled(MyApplication.VPNMode.ALLOW.name().equals(pkg_selection.getValue()));
 
-        findPreference("allowed_application_list").setOnPreferenceClickListener(this);
-        findPreference("disallowed_application_list").setOnPreferenceClickListener(this);
+        findPreference(VPN_DISALLOWED_APPLICATION_LIST).setOnPreferenceClickListener(this);
+        findPreference(VPN_ALLOWED_APPLICATION_LIST).setOnPreferenceClickListener(this);
 
     }
 
@@ -81,11 +74,11 @@ public class SimplePreferenceFragment extends PreferenceFragment implements Pref
     public boolean onPreferenceClick(Preference preference) {
         // keyを見てクリックされたPreferenceを特定
         switch (preference.getKey()) {
-            case "allowed_application_list":
-                transitionFragment(PackageListPreferenceFragment.newInstance(PackageListPreferenceFragment.VPNMode.ALLOW));
+            case VPN_DISALLOWED_APPLICATION_LIST:
+                transitionFragment(PackageListPreferenceFragment.newInstance(MyApplication.VPNMode.DISALLOW));
                 break;
-            case "disallowed_application_list":
-                transitionFragment(PackageListPreferenceFragment.newInstance(PackageListPreferenceFragment.VPNMode.DISALLOW));
+            case VPN_ALLOWED_APPLICATION_LIST:
+                transitionFragment(PackageListPreferenceFragment.newInstance(MyApplication.VPNMode.ALLOW));
                 break;
         }
         return false;
@@ -102,13 +95,11 @@ public class SimplePreferenceFragment extends PreferenceFragment implements Pref
 
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
     public static class PackageListPreferenceFragment extends PreferenceFragment {
-        enum VPNMode {DISALLOW, ALLOW};
-        private VPNMode mode;
+        private MyApplication.VPNMode mode;
         private PreferenceScreen mRootPreferenceScreen;
 
-        private String pref_key[] = {"vpn_disallowed_application", "vpn_allowed_application"};
 
-        public static PackageListPreferenceFragment newInstance(VPNMode mode) {
+        public static PackageListPreferenceFragment newInstance(MyApplication.VPNMode mode) {
             PackageListPreferenceFragment fragment = new PackageListPreferenceFragment();
             fragment.mode = mode;
             return fragment;
@@ -120,6 +111,12 @@ public class SimplePreferenceFragment extends PreferenceFragment implements Pref
             setHasOptionsMenu(true);
             mRootPreferenceScreen = getPreferenceManager().createPreferenceScreen(getActivity());
             setPreferenceScreen(mRootPreferenceScreen);
+        }
+
+        @Override
+        public void onPause()  {
+            super.onPause();
+            storeSelectedPackageSet(this.getSelectedPackageSet());
         }
 
         @Override
@@ -135,7 +132,7 @@ public class SimplePreferenceFragment extends PreferenceFragment implements Pref
         }
 
         private void buildPackagesPreferences() {
-            Context context = MyApplication.getContext().getApplicationContext();
+            Context context = MyApplication.getInstance().getApplicationContext();
             PackageManager pm = context.getPackageManager();
             List<PackageInfo> installedPackages = pm.getInstalledPackages(PackageManager.GET_META_DATA);
             for (final PackageInfo pi : installedPackages) {
@@ -157,7 +154,8 @@ public class SimplePreferenceFragment extends PreferenceFragment implements Pref
                 Preference pref = this.mRootPreferenceScreen.getPreference(i);
                 if ((pref instanceof CheckBoxPreference)) {
                     CheckBoxPreference pref_check = (CheckBoxPreference) pref;
-                    if (pref_check.isChecked()) selected.add(pref_check.getSummary().toString());
+                    if (pref_check.isChecked())
+                        selected.add(pref_check.getSummary().toString());
                 }
             }
             return selected;
@@ -175,24 +173,21 @@ public class SimplePreferenceFragment extends PreferenceFragment implements Pref
         }
 
         private void loadSelectedPackage() {
-            final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences( getActivity());
             this.getArguments();
-            Set<String> selected = prefs.getStringSet( pref_key[mode.ordinal()], new HashSet<String>());
+            mode  = MyApplication.getInstance().loadVPNMode();
+            Set<String> selected = MyApplication.getInstance().loadVPNApplication(mode);
             setSelectedPackageSet(selected);
         }
 
         private void storeSelectedPackageSet(final Set<String> set) {
-            final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
-            final SharedPreferences.Editor editor = prefs.edit();
-            editor.putStringSet(pref_key[mode.ordinal()], set);
-            editor.commit();
+            MyApplication.getInstance().storeVPNMode(mode);
+            MyApplication.getInstance().storeVPNApplication(mode, set);
         }
 
         @Override
         public boolean onOptionsItemSelected(MenuItem item) {
             int id = item.getItemId();
             if (id == android.R.id.home) {
-                storeSelectedPackageSet(this.getSelectedPackageSet());
                 startActivity(new Intent(getActivity(), SimplePreferenceActivity.class));
                 return true;
             }

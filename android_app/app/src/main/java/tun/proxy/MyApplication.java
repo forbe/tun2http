@@ -14,17 +14,18 @@ import java.util.Map;
 import java.util.Set;
 
 public class MyApplication extends Application {
-    private static Context context;
+    private static MyApplication instance;
 
-    public static Context getContext() {
-        return context;
+    public static MyApplication getInstance() {
+        return instance;
     }
 
     @Override
     public void onCreate() {
         super.onCreate();
-        context = getApplicationContext();
+        instance = this;
     }
+
 //    public byte [] getTrustCA() {
 //        try {
 //            X509Certificate cert = CertificateUtil.getCACertificate("/sdcard/", "");
@@ -40,22 +41,37 @@ public class MyApplication extends Application {
 //        return null;
 //    }
 
-    public int getVPNMode() {
+    public enum VPNMode {DISALLOW, ALLOW};
+
+//    public final String vpn_mode_key[] = {VPNMode.DISALLOW.name(), VPNMode.ALLOW.name()};
+
+    private final String pref_key[] = {"vpn_disallowed_application", "vpn_allowed_application"};
+
+    public VPNMode loadVPNMode() {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        String vpn_connection_mode = sharedPreferences.getString("vpn_connection_mode", String.valueOf(SimplePreferenceFragment.PackageListPreferenceFragment.VPNMode.DISALLOW.ordinal()));
-        return Integer.parseInt( vpn_connection_mode );
+        String vpn_mode = sharedPreferences.getString("vpn_connection_mode", MyApplication.VPNMode.DISALLOW.name());
+        return VPNMode.valueOf ( vpn_mode );
     }
 
-    public Set<String> getAllowedApplication() {
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        Set<String> allowed_preference = sharedPreferences.getStringSet("vpn_allowed_application", new HashSet<String>() );
-        return allowed_preference;
+    public void storeVPNMode(VPNMode mode) {
+        final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        final SharedPreferences.Editor editor = prefs.edit();
+        editor.putString("vpn_connection_mode", mode.name());
+        return;
     }
 
-    public Set<String> getDisallowedApplication() {
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        Set<String> disallowed_preference = sharedPreferences.getStringSet("vpn_disallowed_application", new HashSet<String>() );
-        return disallowed_preference;
+    public Set<String> loadVPNApplication(VPNMode mode) {
+        final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        Set<String> preference = prefs.getStringSet(pref_key[mode.ordinal()], new HashSet<String>() );
+        return preference;
+    }
+
+    public void storeVPNApplication(VPNMode mode, final Set<String> set) {
+        final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        final SharedPreferences.Editor editor = prefs.edit();
+        editor.putStringSet(pref_key[mode.ordinal()], set);
+        editor.commit();
+        return ;
     }
 
 }

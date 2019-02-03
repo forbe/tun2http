@@ -12,12 +12,9 @@ public class PackageUtil {
 
     public static Map<String, String[]> getPackageMap() {
         final Map<String, String[]> packageMap = new HashMap<>();
-        Context context = MyApplication.getContext().getApplicationContext();
+        Context context = MyApplication.getInstance().getApplicationContext();
         PackageManager pm = context.getPackageManager();
         List<PackageInfo> installedPackages = pm.getInstalledPackages( PackageManager.GET_META_DATA );
-        for (final PackageInfo pi : installedPackages) {
-
-        }
         Collections.sort( installedPackages, new Comparator<PackageInfo>() {
             @Override
             public int compare(PackageInfo t1, PackageInfo t2) {
