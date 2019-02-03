@@ -39,7 +39,7 @@ Configure VPN service settings.
 
 There are two modes, Disallow Application and Allow Application, but you can not specify them at the same time.
 Because of this you will have to choose whether you want to run in either mode.
-The default is * Disallow Application * selected.
+The default is **Disallow Application** selected.
 
 * Disallow Application
   * Select the application you want to exclude from VPN service.

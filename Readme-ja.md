@@ -39,7 +39,7 @@ VPNの接続設定を行います。
 
 Disallow Application と Allow Application の２つのモードがありますが、同時に指定することはできません。
 このためどちらのモードで動作させたいかを選択する必要があります。
-デフォルトは * Disallow Application * が選択された状態です。
+デフォルトは **Disallow Application** が選択された状態です。
 
 * Disallow Application
   * VPN通信から除外したいアプリを選択する。
