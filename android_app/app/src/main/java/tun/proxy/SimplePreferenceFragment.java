@@ -10,6 +10,8 @@ import android.os.Build;
 import android.os.Bundle;
 import android.preference.*;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.*;
 
 import java.util.HashSet;
 import java.util.List;
@@ -38,8 +40,8 @@ public class SimplePreferenceFragment extends PreferenceFragment implements Pref
 
                 PreferenceScreen disallow = (PreferenceScreen) findPreference(VPN_DISALLOWED_APPLICATION_LIST);
                 PreferenceScreen allow = (PreferenceScreen) findPreference(VPN_ALLOWED_APPLICATION_LIST);
-                disallow.setEnabled(index == 0);
-                allow.setEnabled(index != 0);
+                disallow.setEnabled(index == MyApplication.VPNMode.DISALLOW.ordinal());
+                allow.setEnabled(index == MyApplication.VPNMode.ALLOW.ordinal());
 
                 // Set the summary to reflect the new value.
                 preference.setSummary(index >= 0 ? listPreference.getEntries()[index] : null);
@@ -143,6 +145,7 @@ public class SimplePreferenceFragment extends PreferenceFragment implements Pref
 
         private Preference buildPackagePreferences(final PackageManager pm, final PackageInfo pi) {
             final CheckBoxPreference p = new CheckBoxPreference(getActivity());
+            p.setIcon(pi.applicationInfo.loadIcon(pm));
             p.setTitle(pi.applicationInfo.loadLabel(pm).toString());
             p.setSummary(pi.packageName);
             return p;
