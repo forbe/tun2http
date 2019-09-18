@@ -53,10 +53,18 @@ The default is **Disallow Application** selected.
 
 ### Settings Search
 
-![Menu Settings](images/Menu-Settings-Search.png)
+![Menu Settings](images/Menu-Settings-Search.png) / ![Menu Settings](images/Menu-Settings-SortBy.png)
 
 You can narrow down the applications from the search icon.(![Menu](images/Search.png))
 Only applications that contain the keyword specified in the application name are displayed.
+
+The application list can be sorted from the menu icon  (![Menu](images/Menu.png)) at the top of the screen.
+
+* sort by app name 
+  * Sort application list by application name
+
+* sort by package name 
+  * Sort application list by package name
 
 ### About
 Display application version

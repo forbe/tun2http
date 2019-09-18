@@ -39,7 +39,7 @@ public class SimplePreferenceFragment extends PreferenceFragment implements Pref
             @Override
             public boolean onPreferenceChange(Preference preference, Object value) {
             if (preference instanceof ListPreference) {
-                ListPreference listPreference = (ListPreference) preference;
+                final ListPreference listPreference = (ListPreference) preference;
                 int index = listPreference.findIndexOfValue((String) value);
 
                 PreferenceScreen disallow = (PreferenceScreen) findPreference(VPN_DISALLOWED_APPLICATION_LIST);
@@ -102,11 +102,12 @@ public class SimplePreferenceFragment extends PreferenceFragment implements Pref
 
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
     public static class PackageListPreferenceFragment extends PreferenceFragment implements SearchView.OnQueryTextListener, SearchView.OnCloseListener {
-        private MyApplication.VPNMode mode;
+        private MyApplication.VPNMode mode = MyApplication.VPNMode.DISALLOW;
+        private MyApplication.AppSortBy appSortBy = MyApplication.AppSortBy.APPNAME;
         private PreferenceScreen mRootPreferenceScreen;
 
         public static PackageListPreferenceFragment newInstance(MyApplication.VPNMode mode) {
-            PackageListPreferenceFragment fragment = new PackageListPreferenceFragment();
+            final PackageListPreferenceFragment fragment = new PackageListPreferenceFragment();
             fragment.mode = mode;
             return fragment;
         }
@@ -123,6 +124,10 @@ public class SimplePreferenceFragment extends PreferenceFragment implements Pref
         private SearchView searchView;
 
         protected void filter(String filter) {
+            this.filter(filter, this.appSortBy);
+        }
+
+        protected void filter(String filter, final MyApplication.AppSortBy sortBy) {
             if (filter == null) {
                 filter = searchFilter;
             }
@@ -130,7 +135,7 @@ public class SimplePreferenceFragment extends PreferenceFragment implements Pref
                 searchFilter = filter;
             }
             removeAllPreferenceScreen();
-            buildPackagesPreferences(filter);
+            buildPackagesPreferences(filter, sortBy);
             loadSelectedPackage();
         }
 
@@ -140,7 +145,7 @@ public class SimplePreferenceFragment extends PreferenceFragment implements Pref
             // Menuの設定
             inflater.inflate(R.menu.menu_search, menu);
 
-            MenuItem menuItem = menu.findItem(R.id.search_menu_item);
+            final MenuItem menuItem = menu.findItem(R.id.menu_search_item);
 
             this.searchView = (SearchView)menuItem.getActionView();
             this.searchView.setOnQueryTextListener(this);
@@ -164,16 +169,23 @@ public class SimplePreferenceFragment extends PreferenceFragment implements Pref
             mRootPreferenceScreen.removeAll();
         }
 
-        private void buildPackagesPreferences(String filter) {
+        private void buildPackagesPreferences(String filter, final MyApplication.AppSortBy sortBy) {
             final Context context = MyApplication.getInstance().getApplicationContext();
             final PackageManager pm = context.getPackageManager();
             final List<PackageInfo> installedPackages = pm.getInstalledPackages(PackageManager.GET_META_DATA);
             Collections.sort(installedPackages, new Comparator<PackageInfo>() {
                 @Override
                 public int compare(PackageInfo o1, PackageInfo o2) {
-                    String t1 = o1.applicationInfo.loadLabel(pm).toString();
-                    String t2 = o2.applicationInfo.loadLabel(pm).toString();
-                    return t1.compareTo(t2);
+                    if (sortBy == MyApplication.AppSortBy.APPNAME) {
+                        String t1 = o1.applicationInfo.loadLabel(pm).toString();
+                        String t2 = o2.applicationInfo.loadLabel(pm).toString();
+                        return t1.compareTo(t2);
+                    }
+                    else {
+                        String t1 = o1.packageName;
+                        String t2 = o2.packageName;
+                        return t1.compareTo(t2);
+                    }
                 }
             });
             for (final PackageInfo pi : installedPackages) {
@@ -234,9 +246,20 @@ public class SimplePreferenceFragment extends PreferenceFragment implements Pref
         @Override
         public boolean onOptionsItemSelected(MenuItem item) {
             int id = item.getItemId();
-            if (id == android.R.id.home) {
-                startActivity(new Intent(getActivity(), SimplePreferenceActivity.class));
-                return true;
+            switch (id) {
+                case android.R.id.home:
+                    startActivity(new Intent(getActivity(), SimplePreferenceActivity.class));
+                    return true;
+                case R.id.menu_sort_app_name:
+                    item.setChecked(!item.isChecked());
+                    this.appSortBy = MyApplication.AppSortBy.APPNAME;
+                    filter(null, this.appSortBy);
+                    break;
+                case R.id.menu_sort_pkg_name:
+                    item.setChecked(!item.isChecked());
+                    this.appSortBy = MyApplication.AppSortBy.PKGNAME;
+                    filter(null, this.appSortBy);
+                    break;
             }
             return super.onOptionsItemSelected(item);
         }

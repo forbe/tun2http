@@ -43,6 +43,8 @@ public class MyApplication extends Application {
 
     public enum VPNMode {DISALLOW, ALLOW};
 
+    public enum AppSortBy {APPNAME, PKGNAME};
+
 //    public final String vpn_mode_key[] = {VPNMode.DISALLOW.name(), VPNMode.ALLOW.name()};
 
     private final String pref_key[] = {"vpn_disallowed_application", "vpn_allowed_application"};

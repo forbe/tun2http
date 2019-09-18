@@ -2,10 +2,21 @@
 <menu
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
-    <item android:id="@+id/search_menu_item"
+    <item android:id="@+id/menu_search_item"
         android:title="@string/search"
         android:icon="@android:drawable/ic_menu_search"
         app:showAsAction="always"
         android:orderInCategory="100"
         app:actionViewClass="android.widget.SearchView" />
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/menu_sort_app_name"
+            android:checked="true"
+            android:title="sort by app name"
+            app:showAsAction="never" />
+        <item
+            android:id="@+id/menu_sort_pkg_name"
+            android:title="sort by package name"
+            app:showAsAction="never" />
+    </group>
 </menu>
