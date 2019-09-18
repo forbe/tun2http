@@ -35,7 +35,7 @@ Application settings can be made from the menu icon (![Menu](images/Menu.png)) a
 
 Configure VPN service settings.
 
-![Menu Settings](images/Menu-Settings.png) => ![Menu Settings](images/Menu-Settings-app.png)
+![Menu Settings](images/Menu-Settings.png) ⇒ ![Menu Settings](images/Menu-Settings-app.png)
 
 There are two modes, Disallow Application and Allow Application, but you can not specify them at the same time.
 Because of this you will have to choose whether you want to run in either mode.
@@ -60,16 +60,16 @@ Only applications that contain the keyword specified in the application name are
 
 The application list can be sorted from the menu icon  (![Menu](images/Menu.png)) at the top of the screen.
 
-* sort by app name 
+* sort by app name
   * Sort application list by application name
 
-* sort by package name 
+* sort by package name
   * Sort application list by package name
 
 ### About
 Display application version
 
-## Operating environment 
+## Operating environment
 
 * Android 5.0 (API Level 21) or later
 
