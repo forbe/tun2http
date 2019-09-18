@@ -51,6 +51,13 @@ Disallow Application と Allow Application の２つのモードがあります�
     選択されていないアプリは、VPNを利用しない場合と同じ挙動になります。
     なお、一つも選択されていない場合は、すべてのアプリの通信がVPNを経由します。
 
+### Settings 検索
+
+![Menu Settings](images/Menu-Settings-Search.png)
+
+画面上部の検索アイコン(![Menu](images/Search.png))から、アプリケーションを絞り込めます。
+アプリケーション名に指定したキーワードを含む、アプリケーションのみが表示されます。
+
 ### About
 アプリケーションバージョンを表示します。
 

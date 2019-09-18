@@ -51,6 +51,13 @@ The default is **Disallow Application** selected.
     Applications that are not selected behave the same as when not using VPN.
     In addition, if none of them are selected, communication of all applications will go through VPN.
 
+### Settings Search
+
+![Menu Settings](images/Menu-Settings-Search.png)
+
+You can narrow down the applications from the search icon.(![Menu](images/Search.png))
+Only applications that contain the keyword specified in the application name are displayed.
+
 ### About
 Display application version
 
