@@ -9,16 +9,20 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.*;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.*;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 public class SimplePreferenceFragment extends PreferenceFragment implements Preference.OnPreferenceClickListener {
-
     public static final String VPN_CONNECTION_MODE = "vpn_connection_mode";
     public static final String VPN_DISALLOWED_APPLICATION_LIST = "vpn_disallowed_application_list";
     public static final String VPN_ALLOWED_APPLICATION_LIST = "vpn_allowed_application_list";
@@ -95,11 +99,11 @@ public class SimplePreferenceFragment extends PreferenceFragment implements Pref
             .commit();
     }
 
+
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-    public static class PackageListPreferenceFragment extends PreferenceFragment {
+    public static class PackageListPreferenceFragment extends PreferenceFragment implements SearchView.OnQueryTextListener, SearchView.OnCloseListener {
         private MyApplication.VPNMode mode;
         private PreferenceScreen mRootPreferenceScreen;
-
 
         public static PackageListPreferenceFragment newInstance(MyApplication.VPNMode mode) {
             PackageListPreferenceFragment fragment = new PackageListPreferenceFragment();
@@ -115,6 +119,35 @@ public class SimplePreferenceFragment extends PreferenceFragment implements Pref
             setPreferenceScreen(mRootPreferenceScreen);
         }
 
+        private String searchFilter = "";
+        private SearchView searchView;
+
+        protected void filter(String filter) {
+            if (filter == null) {
+                filter = searchFilter;
+            }
+            else {
+                searchFilter = filter;
+            }
+            removeAllPreferenceScreen();
+            buildPackagesPreferences(filter);
+            loadSelectedPackage();
+        }
+
+        @Override
+        public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+            super.onCreateOptionsMenu(menu, inflater);
+            // Menuの設定
+            inflater.inflate(R.menu.menu_search, menu);
+
+            MenuItem menuItem = menu.findItem(R.id.search_menu_item);
+
+            this.searchView = (SearchView)menuItem.getActionView();
+            this.searchView.setOnQueryTextListener(this);
+            this.searchView.setOnCloseListener(this);
+            this.searchView.setSubmitButtonEnabled(false);
+        }
+
         @Override
         public void onPause()  {
             super.onPause();
@@ -124,22 +157,31 @@ public class SimplePreferenceFragment extends PreferenceFragment implements Pref
         @Override
         public void onResume() {
             super.onResume();
-            removeAllPreferenceScreen();
-            buildPackagesPreferences();
-            loadSelectedPackage();
+            filter(null);
         }
 
         private void removeAllPreferenceScreen() {
             mRootPreferenceScreen.removeAll();
         }
 
-        private void buildPackagesPreferences() {
-            Context context = MyApplication.getInstance().getApplicationContext();
-            PackageManager pm = context.getPackageManager();
-            List<PackageInfo> installedPackages = pm.getInstalledPackages(PackageManager.GET_META_DATA);
+        private void buildPackagesPreferences(String filter) {
+            final Context context = MyApplication.getInstance().getApplicationContext();
+            final PackageManager pm = context.getPackageManager();
+            final List<PackageInfo> installedPackages = pm.getInstalledPackages(PackageManager.GET_META_DATA);
+            Collections.sort(installedPackages, new Comparator<PackageInfo>() {
+                @Override
+                public int compare(PackageInfo o1, PackageInfo o2) {
+                    String t1 = o1.applicationInfo.loadLabel(pm).toString();
+                    String t2 = o2.applicationInfo.loadLabel(pm).toString();
+                    return t1.compareTo(t2);
+                }
+            });
             for (final PackageInfo pi : installedPackages) {
-                final Preference preference = buildPackagePreferences(pm, pi);
-                mRootPreferenceScreen.addPreference(preference);
+                String t1 = pi.applicationInfo.loadLabel(pm).toString();
+                if (filter.trim().isEmpty() || t1.toLowerCase().contains(filter.toLowerCase())) {
+                    final Preference preference = buildPackagePreferences(pm, pi);
+                    mRootPreferenceScreen.addPreference(preference);
+                }
             }
         }
 
@@ -157,8 +199,9 @@ public class SimplePreferenceFragment extends PreferenceFragment implements Pref
                 Preference pref = this.mRootPreferenceScreen.getPreference(i);
                 if ((pref instanceof CheckBoxPreference)) {
                     CheckBoxPreference pref_check = (CheckBoxPreference) pref;
-                    if (pref_check.isChecked())
+                    if (pref_check.isChecked()) {
                         selected.add(pref_check.getSummary().toString());
+                    }
                 }
             }
             return selected;
@@ -169,8 +212,9 @@ public class SimplePreferenceFragment extends PreferenceFragment implements Pref
                 Preference pref = this.mRootPreferenceScreen.getPreference(i);
                 if ((pref instanceof CheckBoxPreference)) {
                     CheckBoxPreference pref_check = (CheckBoxPreference) pref;
-                    if (selected.contains(pref_check.getSummary()))
+                    if (selected.contains(pref_check.getSummary())) {
                         pref_check.setChecked(true);
+                    }
                 }
             }
         }
@@ -197,6 +241,29 @@ public class SimplePreferenceFragment extends PreferenceFragment implements Pref
             return super.onOptionsItemSelected(item);
         }
 
+        @Override
+        public boolean onQueryTextSubmit(String query) {
+            this.searchView.clearFocus();
+            if (!query.trim().isEmpty()) {
+                filter(query);
+                return true;
+            }
+            else {
+                filter("");
+                return true;
+            }
+        }
+
+        @Override
+        public boolean onQueryTextChange(String newText) {
+            return false;
+        }
+
+        @Override
+        public boolean onClose() {
+            filter("");
+            return false;
+        }
     }
 
 }
