@@ -6,7 +6,7 @@ android {
         applicationId "tun.proxy"
         minSdkVersion 21
         targetSdkVersion 27
-        versionCode 100011
+        versionCode 100012
         versionName VERSION_NAME
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         externalNativeBuild {

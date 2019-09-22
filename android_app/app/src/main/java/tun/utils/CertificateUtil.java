@@ -19,10 +19,11 @@ import java.util.regex.Pattern;
 
 public class CertificateUtil {
     private static final String TAG = "CertificateManager";
-    public enum CertificateInstallType {SYSTEM, USER}
 
-    private final static Pattern CA_COMMON_NAME = Pattern.compile( "CN=([^,]+),?.*$" );
-    private final static Pattern CA_ORGANIZATION = Pattern.compile( "O=([^,]+),?.*$" );
+    public enum CertificateInstallType {SYSTEM, USER};
+
+    private final static Pattern CA_COMMON_NAME = Pattern.compile("CN=([^,]+),?.*$");
+    private final static Pattern CA_ORGANIZATION = Pattern.compile("O=([^,]+),?.*$");
 
     public static boolean findCAStore(String caName) {
         boolean found = false;
@@ -42,14 +43,14 @@ public class CertificateUtil {
                     break;
                 }
             }
-        } catch(IOException e){
-            Log.e( TAG, e.getMessage(), e);
-        } catch(KeyStoreException e){
-            Log.e( TAG, e.getMessage(), e);
-        } catch(NoSuchAlgorithmException e){
-            Log.e( TAG, e.getMessage(), e);
-        } catch(CertificateException e){
-            Log.e( TAG, e.getMessage(), e);
+        } catch (IOException e) {
+            Log.e(TAG, e.getMessage(), e);
+        } catch (KeyStoreException e) {
+            Log.e(TAG, e.getMessage(), e);
+        } catch (NoSuchAlgorithmException e) {
+            Log.e(TAG, e.getMessage(), e);
+        } catch (CertificateException e) {
+            Log.e(TAG, e.getMessage(), e);
         }
         return found;
     }
@@ -58,28 +59,28 @@ public class CertificateUtil {
     public static List<X509Certificate> getRootCAStore() {
         final List<X509Certificate> rootCAList = new ArrayList<>();
         try {
-            KeyStore ks = KeyStore.getInstance( "AndroidCAStore" );
+            KeyStore ks = KeyStore.getInstance("AndroidCAStore");
             if (ks == null)
                 return null;
 
-            ks.load( null, null );
+            ks.load(null, null);
             X509Certificate rootCACert = null;
             Enumeration aliases = ks.aliases();
             boolean found = false;
             while (aliases.hasMoreElements()) {
                 String alias = (String) aliases.nextElement();
-                X509Certificate cert = (X509Certificate) ks.getCertificate( alias );
-                System.out.println( alias + "/" + cert.getIssuerX500Principal().getName() );
-                rootCAList.add( cert );
+                X509Certificate cert = (X509Certificate) ks.getCertificate(alias);
+                System.out.println(alias + "/" + cert.getIssuerX500Principal().getName());
+                rootCAList.add(cert);
             }
         } catch (IOException e) {
-            Log.e( TAG, e.getMessage(), e);
+            Log.e(TAG, e.getMessage(), e);
         } catch (KeyStoreException e) {
-            Log.e( TAG, e.getMessage(), e);
+            Log.e(TAG, e.getMessage(), e);
         } catch (NoSuchAlgorithmException e) {
-            Log.e( TAG, e.getMessage(), e);
+            Log.e(TAG, e.getMessage(), e);
         } catch (CertificateException e) {
-            Log.e( TAG, e.getMessage(), e);
+            Log.e(TAG, e.getMessage(), e);
         }
         return rootCAList;
     }
@@ -87,82 +88,83 @@ public class CertificateUtil {
     public static Map<String, String[]> getRootCAMap(EnumSet<CertificateInstallType> type) {
         final Map<String, String[]> rootCAMap = new HashMap<>();
         try {
-            KeyStore ks = KeyStore.getInstance( "AndroidCAStore" );
+            KeyStore ks = KeyStore.getInstance("AndroidCAStore");
             if (ks == null)
                 return null;
 
-            ks.load( null, null );
+            ks.load(null, null);
             X509Certificate rootCACert = null;
             Enumeration aliases = ks.aliases();
             List<X509Certificate> certList = new ArrayList<>();
             while (aliases.hasMoreElements()) {
                 String alias = (String) aliases.nextElement();
-                X509Certificate cert = (X509Certificate) ks.getCertificate( alias );
-                if (type.contains(CertificateInstallType.SYSTEM)  && alias.startsWith("system:")) {
-                    certList.add( cert );
+                X509Certificate cert = (X509Certificate) ks.getCertificate(alias);
+                if (type.contains(CertificateInstallType.SYSTEM) && alias.startsWith("system:")) {
+                    certList.add(cert);
                 }
                 if (type.contains(CertificateInstallType.USER) && alias.startsWith("user:")) {
-                    certList.add( cert );
+                    certList.add(cert);
                 }
             }
-            Collections.sort( certList, new Comparator<X509Certificate>() {
+            Collections.sort(certList, new Comparator<X509Certificate>() {
                 @Override
                 public int compare(X509Certificate t1, X509Certificate t2) {
-                String t1cn = CertificateUtil.getCommonName( t1.getIssuerX500Principal().getName() );
-                String t2cn = CertificateUtil.getCommonName( t2.getIssuerX500Principal().getName() );
-                return t1cn.compareToIgnoreCase( t2cn );
+                    String t1cn = CertificateUtil.getCommonName(t1.getIssuerX500Principal().getName());
+                    String t2cn = CertificateUtil.getCommonName(t2.getIssuerX500Principal().getName());
+                    return t1cn.compareToIgnoreCase(t2cn);
                 }
-            } );
+            });
             // ソート後
             List<String> rootCANameList = new ArrayList<>();
             List<String> rootCAList = new ArrayList<>();
             for (X509Certificate cert : certList) {
-                String cn = CertificateUtil.getCommonName( cert.getIssuerX500Principal().getName() );
+                String cn = CertificateUtil.getCommonName(cert.getIssuerX500Principal().getName());
                 if (cn.trim().isEmpty()) continue;
                 //String o = CertificateUtil.getOrganization( cert.getIssuerX500Principal().getName());
-                rootCANameList.add( cn );
-                rootCAList.add( encode( cert.getEncoded() ) );
+                rootCANameList.add(cn);
+                rootCAList.add(encode(cert.getEncoded()));
             }
-            rootCAMap.put( "entry", rootCANameList.toArray( new String[0] ) );
-            rootCAMap.put( "value", rootCAList.toArray( new String[0] ) );
+            rootCAMap.put("entry", rootCANameList.toArray(new String[0]));
+            rootCAMap.put("value", rootCAList.toArray(new String[0]));
         } catch (IOException e) {
-            Log.e( TAG, e.getMessage(), e);
+            Log.e(TAG, e.getMessage(), e);
         } catch (KeyStoreException e) {
-            Log.e( TAG, e.getMessage(), e);
+            Log.e(TAG, e.getMessage(), e);
         } catch (NoSuchAlgorithmException e) {
-            Log.e( TAG, e.getMessage(), e);
+            Log.e(TAG, e.getMessage(), e);
         } catch (CertificateException e) {
-            Log.e( TAG, e.getMessage(), e);
+            Log.e(TAG, e.getMessage(), e);
         }
         return rootCAMap;
     }
 
     public static String encode(byte b[]) {
-        return new String( b, StandardCharsets.ISO_8859_1 );
+        return new String(b, StandardCharsets.ISO_8859_1);
     }
+
     public static byte[] decode(String s) {
-        return s.getBytes( StandardCharsets.ISO_8859_1 );
+        return s.getBytes(StandardCharsets.ISO_8859_1);
     }
 
     public static Intent trustRootCA(X509Certificate cert) {
-        Log.d( TAG, "root CA is not yet trusted" );
+        Log.d(TAG, "root CA is not yet trusted");
         Intent intent = KeyChain.createInstallIntent();
         try {
             if (findCAStore(cert.getIssuerDN().getName())) return null;
-            intent.putExtra( KeyChain.EXTRA_CERTIFICATE, cert.getEncoded() );
-            intent.putExtra( KeyChain.EXTRA_NAME,  getCommonName(cert.getIssuerDN().getName()));
+            intent.putExtra(KeyChain.EXTRA_CERTIFICATE, cert.getEncoded());
+            intent.putExtra(KeyChain.EXTRA_NAME, getCommonName(cert.getIssuerDN().getName()));
         } catch (CertificateEncodingException e) {
-            Log.e( TAG, e.getMessage(), e);
+            Log.e(TAG, e.getMessage(), e);
         }
         return intent;
     }
 
     // get the CA certificate by the path
-    public static X509Certificate getCACertificate(byte [] buff) {
+    public static X509Certificate getCACertificate(byte[] buff) {
         X509Certificate ca = null;
-       try {
-            CertificateFactory cf = CertificateFactory.getInstance( "X.509" );
-            ca = (X509Certificate) cf.generateCertificate( new ByteArrayInputStream( buff ) );
+        try {
+            CertificateFactory cf = CertificateFactory.getInstance("X.509");
+            ca = (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(buff));
         } catch (CertificateException e) {
             e.printStackTrace();
         }
@@ -174,9 +176,9 @@ public class CertificateUtil {
         String CERT_FILE = dir + "/burp_export.crt";
         InputStream inStream = null;
         try {
-            inStream = new FileInputStream( CERT_FILE );
-            CertificateFactory cf = CertificateFactory.getInstance( "X.509" );
-            return (X509Certificate) cf.generateCertificate( inStream );
+            inStream = new FileInputStream(CERT_FILE);
+            CertificateFactory cf = CertificateFactory.getInstance("X.509");
+            return (X509Certificate) cf.generateCertificate(inStream);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (CertificateException e) {
@@ -194,18 +196,18 @@ public class CertificateUtil {
 
     public static String getCommonName(String dn) {
         String cn = "";
-        Matcher m = CA_COMMON_NAME.matcher( dn );
+        Matcher m = CA_COMMON_NAME.matcher(dn);
         if (m.find()) {
-            cn = m.group( 1 );
+            cn = m.group(1);
         }
         return cn;
     }
 
     public static String getOrganization(String dn) {
         String on = "";
-        Matcher m = CA_ORGANIZATION.matcher( dn );
+        Matcher m = CA_ORGANIZATION.matcher(dn);
         if (m.find()) {
-            on = m.group( 1 );
+            on = m.group(1);
         }
         return on;
     }

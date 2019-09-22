@@ -66,7 +66,7 @@ public class MainActivity extends AppCompatActivity {
 //                    if (intent != null) {
 //                        startActivityForResult(intent, REQUEST_CERT);
 //                    } else {
-                       startVpn();
+                startVpn();
 //                    }
 //                }
             }
@@ -272,7 +272,7 @@ public class MainActivity extends AppCompatActivity {
         switch (requestCode) {
             case 8000: {
                 if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED)     {
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 } else {
                     requestPermission();
                 }
