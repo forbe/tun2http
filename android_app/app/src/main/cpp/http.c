@@ -34,8 +34,7 @@ static const char http_503[] =
 
 #include "tun2http.h"
 
-int
-get_header(const char *header, const char *data, size_t data_len, char *value) {
+int get_header(const char *header, const char *data, size_t data_len, char *value) {
     int len, header_len;
 
     header_len = strlen(header);
@@ -64,8 +63,7 @@ get_header(const char *header, const char *data, size_t data_len, char *value) {
     return -2;
 }
 
-int
-next_header(const char **data, size_t *len) {
+int next_header(const char **data, size_t *len) {
     int header_len;
 
     /* perhaps we can optimize this to reuse the value of header_len, rather
@@ -139,39 +137,41 @@ uint8_t *patch_http_url(uint8_t *data, size_t *data_len) {
     //GET POST PUT DELETE HEAD OPTIONS PATCH
     char *word;
     uint8_t *pos = 0;
-    if (pos = find_data(data, *data_len, "GET ")) {
+    if ((pos = find_data(data, *data_len, "GET ")) > 0) {
         word = "GET ";
-    } else if (pos = find_data(data, *data_len, "POST ")) {
+    } else if ((pos = find_data(data, *data_len, "POST ")) > 0) {
         word = "POST ";
-    } else if (pos = find_data(data, *data_len, "PUT ")) {
+    } else if ((pos = find_data(data, *data_len, "PUT ")) > 0) {
         word = "PUT ";
-    } else if (pos = find_data(data, *data_len, "DELETE ")) {
+    } else if ((pos = find_data(data, *data_len, "DELETE ")) > 0) {
         word = "DELETE ";
-    } else if (pos = find_data(data, *data_len, "HEAD ")) {
+    } else if ((pos = find_data(data, *data_len, "HEAD ")) > 0) {
         word = "HEAD ";
-    } else if (pos = find_data(data, *data_len, "OPTIONS ")) {
+    } else if ((pos = find_data(data, *data_len, "OPTIONS ")) > 0) {
         word = "OPTIONS ";
-    } else if (pos = find_data(data, *data_len, "PATCH ")) {
+    } else if ((pos = find_data(data, *data_len, "PATCH ")) > 0) {
         word = "PATCH ";
-    } else if (pos = find_data(data, *data_len, "HEAD ")) {
+    } else if ((pos = find_data(data, *data_len, "HEAD ")) > 0) {
         word = "HEAD ";
-    } else if (pos = find_data(data, *data_len, "TRACE ")) {
+    } else if ((pos = find_data(data, *data_len, "TRACE ")) > 0) {
         word = "TRACE ";
-    } else if (pos = find_data(data, *data_len, "PROPFIND ")) {
+    } else if ((pos = find_data(data, *data_len, "PROPFIND ")) > 0) {
         word = "PROPFIND ";
-    } else if (pos = find_data(data, *data_len, "MKCOL ")) {
+    } else if ((pos = find_data(data, *data_len, "PROPPATCH ")) > 0) {
+        word = "PROPPATCH ";
+    } else if ((pos = find_data(data, *data_len, "MKCOL ")) > 0) {
         word = "MKCOL ";
-    } else if (pos = find_data(data, *data_len, "COPY ")) {
+    } else if ((pos = find_data(data, *data_len, "COPY ")) > 0) {
         word = "COPY ";
-    } else if (pos = find_data(data, *data_len, "MOVE ")) {
+    } else if ((pos = find_data(data, *data_len, "MOVE ")) > 0) {
         word = "MOVE ";
-    } else if (pos = find_data(data, *data_len, "LOCK ")) {
+    } else if ((pos = find_data(data, *data_len, "LOCK ")) > 0) {
         word = "LOCK ";
-    } else if (pos = find_data(data, *data_len, "UNLOCK ")) {
+    } else if ((pos = find_data(data, *data_len, "UNLOCK ")) > 0) {
         word = "UNLOCK ";
-    } else if (pos = find_data(data, *data_len, "LINK ")) {
+    } else if ((pos = find_data(data, *data_len, "LINK ")) > 0) {
         word = "LINK ";
-    } else if (pos = find_data(data, *data_len, "UNLINK ")) {
+    } else if ((pos = find_data(data, *data_len, "UNLINK "))> 0) {
         word = "UNLINK ";
     }
 

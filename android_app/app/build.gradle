@@ -6,7 +6,7 @@ android {
         applicationId "tun.proxy"
         minSdkVersion 21
         targetSdkVersion 27
-        versionCode 100012
+        versionCode 100013
         versionName VERSION_NAME
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         externalNativeBuild {
@@ -44,14 +44,13 @@ android {
             path "CMakeLists.txt"
         }
     }
+
     applicationVariants.all { variant ->
         if (variant.buildType.name.equals("release")) {
-            variant.outputs.each { output ->
-                if (output.outputFile != null && output.outputFile.name.endsWith('.apk')) {
-                    def list = defaultConfig.applicationId.split("\\.")
-                    def appname = list[list.length - 1]
+            variant.outputs.all {
+                if (outputFileName != null && outputFileName.endsWith('.apk')) {
                     def versionName = defaultConfig.versionName
-//                    output.outputFile = new File(output.outputFile.parent, "${appname}_v${versionName}.apk")
+                    outputFileName = "${APP_NAME}_v${versionName}.apk"
                 }
             }
         }

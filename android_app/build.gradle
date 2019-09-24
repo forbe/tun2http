@@ -21,7 +21,8 @@ task clean(type: Delete) {
 }
 
 task release(type: Zip) {
-    archiveName = "${APP_NAME}_v${VERSION_NAME}.${extension}"
+    archiveBaseName ="${APP_NAME}_v${VERSION_NAME}"
+    destinationDirectory = file("${projectDir}")
     from rootProject.rootDir
     include '*'
     include 'gradle/**'

@@ -37,17 +37,19 @@ public class SimplePreferenceFragment extends PreferenceFragment
 
         /* Allowed / Disallowed Application */
         final ListPreference prefPackage = (ListPreference) this.findPreference(VPN_CONNECTION_MODE);
+        final PreferenceScreen prefDisallow = (PreferenceScreen) findPreference(VPN_DISALLOWED_APPLICATION_LIST);
+        final PreferenceScreen prefAllow = (PreferenceScreen) findPreference(VPN_ALLOWED_APPLICATION_LIST);
+        prefDisallow.setOnPreferenceClickListener(this);
+        prefAllow.setOnPreferenceClickListener(this);
+
         prefPackage.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
             @Override
             public boolean onPreferenceChange(Preference preference, Object value) {
             if (preference instanceof ListPreference) {
                 final ListPreference listPreference = (ListPreference) preference;
                 int index = listPreference.findIndexOfValue((String) value);
-
-                PreferenceScreen disallow = (PreferenceScreen) findPreference(VPN_DISALLOWED_APPLICATION_LIST);
-                PreferenceScreen allow = (PreferenceScreen) findPreference(VPN_ALLOWED_APPLICATION_LIST);
-                disallow.setEnabled(index == MyApplication.VPNMode.DISALLOW.ordinal());
-                allow.setEnabled(index == MyApplication.VPNMode.ALLOW.ordinal());
+                prefDisallow.setEnabled(index == MyApplication.VPNMode.DISALLOW.ordinal());
+                prefAllow.setEnabled(index == MyApplication.VPNMode.ALLOW.ordinal());
 
                 // Set the summary to reflect the new value.
                 preference.setSummary(index >= 0 ? listPreference.getEntries()[index] : null);
@@ -57,13 +59,9 @@ public class SimplePreferenceFragment extends PreferenceFragment
             }
         });
         prefPackage.setSummary(prefPackage.getEntry());
-        PreferenceScreen disallow = (PreferenceScreen) findPreference(VPN_DISALLOWED_APPLICATION_LIST);
-        PreferenceScreen allow = (PreferenceScreen) findPreference(VPN_ALLOWED_APPLICATION_LIST);
-        disallow.setEnabled(MyApplication.VPNMode.DISALLOW.name().equals(prefPackage.getValue()));
-        allow.setEnabled(MyApplication.VPNMode.ALLOW.name().equals(prefPackage.getValue()));
+        prefDisallow.setEnabled(MyApplication.VPNMode.DISALLOW.name().equals(prefPackage.getValue()));
+        prefAllow.setEnabled(MyApplication.VPNMode.ALLOW.name().equals(prefPackage.getValue()));
 
-        findPreference(VPN_DISALLOWED_APPLICATION_LIST).setOnPreferenceClickListener(this);
-        findPreference(VPN_ALLOWED_APPLICATION_LIST).setOnPreferenceClickListener(this);
     }
 
     @Override
@@ -104,7 +102,7 @@ public class SimplePreferenceFragment extends PreferenceFragment
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
     public static class PackageListPreferenceFragment extends PreferenceFragment
             implements SearchView.OnQueryTextListener, SearchView.OnCloseListener {
-        final private Map<String, Boolean>  mAllPackageInfoMap = new HashMap<String, Boolean>();
+        final private Map<String, Boolean> mAllPackageInfoMap = new HashMap<String, Boolean>();
 
         private MyApplication.VPNMode mode = MyApplication.VPNMode.DISALLOW;
         private MyApplication.AppSortBy appSortBy = MyApplication.AppSortBy.APPNAME;
@@ -137,6 +135,7 @@ public class SimplePreferenceFragment extends PreferenceFragment
             } else {
                 searchFilter = filter;
             }
+            this.appSortBy = sortBy;
 
             Set<String> selected = this.getAllSelectedPackageSet();
             storeSelectedPackageSet(selected);
@@ -170,7 +169,7 @@ public class SimplePreferenceFragment extends PreferenceFragment
         @Override
         public void onResume() {
             super.onResume();
-            Set<String> loadMap = MyApplication.getInstance().loadVPNApplication(mode);
+            Set<String> loadMap = MyApplication.getInstance().loadVPNApplication(this.mode);
             for (String pkgName : loadMap) {
                 this.mAllPackageInfoMap.put(pkgName, loadMap.contains(pkgName));
             }
@@ -259,14 +258,16 @@ public class SimplePreferenceFragment extends PreferenceFragment
         private Set<String>  getAllSelectedPackageSet() {
             Set<String> selected = this.getFilterSelectedPackageSet();
             for (Map.Entry<String, Boolean> value : this.mAllPackageInfoMap.entrySet()) {
-                if (value.getValue()) selected.add(value.getKey());
+                if (value.getValue()) {
+                    selected.add(value.getKey());
+                }
             }
             return selected;
         }
 
         private void storeSelectedPackageSet(final Set<String> set) {
-            MyApplication.getInstance().storeVPNMode(mode);
-            MyApplication.getInstance().storeVPNApplication(mode, set);
+            MyApplication.getInstance().storeVPNMode(this.mode);
+            MyApplication.getInstance().storeVPNApplication(this.mode, set);
         }
 
         @Override
@@ -278,13 +279,11 @@ public class SimplePreferenceFragment extends PreferenceFragment
                     return true;
                 case R.id.menu_sort_app_name:
                     item.setChecked(!item.isChecked());
-                    this.appSortBy = MyApplication.AppSortBy.APPNAME;
-                    filter(null, this.appSortBy);
+                    filter(null, MyApplication.AppSortBy.APPNAME);
                     break;
                 case R.id.menu_sort_pkg_name:
                     item.setChecked(!item.isChecked());
-                    this.appSortBy = MyApplication.AppSortBy.PKGNAME;
-                    filter(null, this.appSortBy);
+                    filter(null, MyApplication.AppSortBy.PKGNAME);
                     break;
             }
             return super.onOptionsItemSelected(item);
