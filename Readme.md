@@ -19,13 +19,13 @@ When you start the TunProxy application, the following screen will be launched.
 ![Tun Proxy](images/TunProxy.png)
 
 * Proxy address (host:port)
-   * Specify the destination proxy server in the format **IP address:port number**.
-     The IP address must be described in IPv4 format.
+  * Specify the destination proxy server in the format **IP address:port number**.
+    The IP address must be described in IPv4 format.
 
 * [Start] button
-    * Start the VPN service.
+  * Start the VPN service.
 * [Stop] button
-    * Stop the VPN service.
+  * Stop the VPN service.
 
 ## menu
 
@@ -66,6 +66,32 @@ The application list can be sorted from the menu icon  (![Menu](images/Menu.png)
 * sort by package name
   * Sort application list by package name
 
+### MITM (SSL decrypt)
+
+TunProxy does not perform SSL decryption. TunProxy acts like a transparent proxy.
+To perform SSL decryption, set the IP of an SSL decryptable proxy such as Burp suite or Fiddler to the IP of TunProxy
+
+The following are local proxy tools that can decrypt SSL.
+
+* Burp suite
+  * https://portswigger.net/burp
+
+* Fiddler
+  * https://www.telerik.com/fiddler
+
+* ZAP Proxy
+  * https://www.owasp.org/index.php/OWASP_Zed_Attack_Proxy_Project
+
+To decrypt SSL, install the local proxy tool Root certificate in the Android device user certificate.
+However, in Android 7.0 and later, the application no longer trusts user certificates by default.
+
+* https://android-developers.googleblog.com/2016/07/changes-to-trusted-certificate.html
+
+Please refer to the following web site as a solution
+
+* Android 7 Nougat and certificate authorities
+  * https://blog.jeroenhd.nl/article/android-7-nougat-and-certificate-authorities
+
 ### About
 Display application version
 
@@ -78,7 +104,7 @@ Display application version
 Most of the code was created based on the following applications for creating applications.
 
 * forked from MengAndy/tun2http
-    * https://github.com/MengAndy/tun2http/
+  * https://github.com/MengAndy/tun2http/
 
 ## Development environment
 

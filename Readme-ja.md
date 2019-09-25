@@ -6,10 +6,6 @@ Language/[English](https://github.com/raise-isayan/TunProxy/blob/master/Readme.m
 このツールは、Android の VPNService 機能を利用した Proxy 設定ツールです。
 指定したアプリからの通信のみを取得することが可能です。
 
-Android 7.0 以降において、アプリはデフォルトではユーザ証明書を信頼しなくなっています。
-
-* https://android-developers.googleblog.com/2016/07/changes-to-trusted-certificate.html
-
 ## 使用方法
 
 ユーザ証明書領域に信頼させたい Root CA がない場合はインストールします。
@@ -19,13 +15,13 @@ TunProxyアプリを起動すると以下の画面が起動します。
 ![Tun Proxy](images/TunProxy.png)
 
 * Proxy address (host:port)
-   * 接続先のプロキシサーバを **IPアドレス:ポート番号** の形式で指定します。
+  * 接続先のプロキシサーバを **IPアドレス:ポート番号** の形式で指定します。
      IPアドレスはIPv4形式で記載する必要があります。
 
 * [Start] ボタン
-    * 接続を開始します。
+  * 接続を開始します。
 * [Stop] ボタン
-    * 接続を停止します。
+  * 接続を停止します。
 
 ## メニュー
 
@@ -53,7 +49,7 @@ Disallow Application と Allow Application の２つのモードがあります�
 
 ### Settings 検索
 
-![Menu Settings](images/Menu-Settings-Search.png)
+![Menu Settings](images/Menu-Settings-Search.png) / ![Menu Settings](images/Menu-Settings-SortBy.png)
 
 画面上部の検索アイコン(![Menu](images/Search.png))から、アプリケーションを絞り込めます。
 アプリケーション名に指定したキーワードを含む、アプリケーションのみが表示されます。
@@ -65,6 +61,34 @@ Disallow Application と Allow Application の２つのモードがあります�
 
 * パッケージ名で並べ替え
   * パッケージ名でアプリケーションリストを並べ替えます。
+
+### MITM (SSL 復号化)
+
+TunProxyはSSL復号化を実行しません。TunProxyは透過プロキシのように機能します。
+
+SSL復号化を実行するには、Burp suite や Fiddler などのSSLを復号化可能なローカルプロキシツールのIPをTunProxyのIPに設定します
+
+SSLを復号化可能なローカルプロキシツールとしては次に記載するものがあります。
+
+* Burp suite
+  * https://portswigger.net/burp
+
+* Fiddler
+  * https://www.telerik.com/fiddler
+
+* ZAP Proxy
+  * https://www.owasp.org/index.php/OWASP_Zed_Attack_Proxy_Project
+
+
+SSLを復号化するには、ローカルプロキシツールのRoot証明書をAndroid端末のユーザ証明書にインストールしてください。
+ただし、Android 7.0 以降において、デフォルトではユーザ証明書を信頼しなくなっています。
+
+* https://android-developers.googleblog.com/2016/07/changes-to-trusted-certificate.html
+
+解決策として次のWebサイトを参照してください。
+
+* Android 7 Nougatおよび認証局
+  * https://blog.jeroenhd.nl/article/android-7-nougat-and-certificate-authorities
 
 ### About
 アプリケーションバージョンを表示します。
@@ -78,7 +102,7 @@ Disallow Application と Allow Application の２つのモードがあります�
 アプリ作成にあたりコードの大部分は以下のアプリをベースとして作成しました。
 
 * forked from MengAndy/tun2http
-    * https://github.com/MengAndy/tun2http/
+  * https://github.com/MengAndy/tun2http/
 
 ## 開発環境
 
