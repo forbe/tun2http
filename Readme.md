@@ -6,13 +6,7 @@ Language/[Japanese](https://github.com/raise-isayan/TunProxy/blob/master/Readme-
 This tool is a proxy setting tool using Android VPNService.
 It is possible to acquire only HTTP traffic from the specified application.
 
-On Android 7.0 and later, the application no longer trusts user certificates by default.
-
-* https://android-developers.googleblog.com/2016/07/changes-to-trusted-certificate.html
-
 ## how to use
-
-If there is no Root CA you want to trust in the user certificate strage, install it.
 
 When you start the TunProxy application, the following screen will be launched.
 
@@ -37,15 +31,15 @@ Configure VPN service settings.
 
 ![Menu Settings](images/Menu-Settings.png) ⇒ ![Menu Settings](images/Menu-Settings-app.png)
 
-There are two modes, Disallow Application and Allow Application, but you can not specify them at the same time.
+There are two modes, Disallowed Application and Allowed Application, but you can not specify them at the same time.
 Because of this you will have to choose whether you want to run in either mode.
-The default is **Disallow Application** selected.
+The default is **Disallowed Application** selected.
 
-* Disallow Application
+* Disallowed Application
   * Select the application you want to exclude from VPN service.
     The selected application will no longer go through VPN service and behave the same as if you do not use VPN.
 
-* Allow Application
+* Allowed Application
   * Select the application for which you want to perform VPN service.
     The selected application will now go through VPN service.
     Applications that are not selected behave the same as when not using VPN.

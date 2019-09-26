@@ -33,15 +33,15 @@ VPNの接続設定を行います。
 
 ![Menu Settings](images/Menu-Settings.png) ⇒ ![Menu Settings](images/Menu-Settings-app.png)
 
-Disallow Application と Allow Application の２つのモードがありますが、同時に指定することはできません。
+Disallowed Application と Allowed Application の２つのモードがありますが、同時に指定することはできません。
 このためどちらのモードで動作させたいかを選択する必要があります。
-デフォルトは **Disallow Application** が選択された状態です。
+デフォルトは **Disallowed Application** が選択された状態です。
 
-* Disallow Application
+* Disallowed Application
   * VPN通信から除外したいアプリを選択する。
     選択したアプリはVPN通信を経由されなくなり、VPNを利用しない場合と同じ挙動となります。
 
-* Allow Application
+* Allowed Application
   * VPN通信を行いたいアプリを選択する。
     選択したアプリはVPN通信を経由するようになります。
     選択されていないアプリは、VPNを利用しない場合と同じ挙動になります。
