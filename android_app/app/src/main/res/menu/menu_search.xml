@@ -8,7 +8,13 @@
         app:showAsAction="always"
         android:orderInCategory="100"
         app:actionViewClass="android.widget.SearchView" />
-    <group android:checkableBehavior="single">
+
+    <group
+        android:id="@+id/menu_sort_group"
+        android:checkableBehavior="single"
+        android:enabled="true"
+        android:menuCategory="container"
+        android:visible="true">
         <item
             android:id="@+id/menu_sort_app_name"
             android:checked="true"
@@ -19,4 +25,5 @@
             android:title="sort by package name"
             app:showAsAction="never" />
     </group>
+
 </menu>

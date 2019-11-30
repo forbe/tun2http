@@ -55,7 +55,6 @@ public class CertificateUtil {
         return found;
     }
 
-
     public static List<X509Certificate> getRootCAStore() {
         final List<X509Certificate> rootCAList = new ArrayList<>();
         try {
@@ -89,8 +88,9 @@ public class CertificateUtil {
         final Map<String, String[]> rootCAMap = new HashMap<>();
         try {
             KeyStore ks = KeyStore.getInstance("AndroidCAStore");
-            if (ks == null)
+            if (ks == null) {
                 return null;
+            }
 
             ks.load(null, null);
             X509Certificate rootCACert = null;
@@ -109,9 +109,9 @@ public class CertificateUtil {
             Collections.sort(certList, new Comparator<X509Certificate>() {
                 @Override
                 public int compare(X509Certificate t1, X509Certificate t2) {
-                    String t1cn = CertificateUtil.getCommonName(t1.getIssuerX500Principal().getName());
-                    String t2cn = CertificateUtil.getCommonName(t2.getIssuerX500Principal().getName());
-                    return t1cn.compareToIgnoreCase(t2cn);
+                String t1cn = CertificateUtil.getCommonName(t1.getIssuerX500Principal().getName());
+                String t2cn = CertificateUtil.getCommonName(t2.getIssuerX500Principal().getName());
+                return t1cn.compareToIgnoreCase(t2cn);
                 }
             });
             // ソート後
@@ -166,30 +166,22 @@ public class CertificateUtil {
             CertificateFactory cf = CertificateFactory.getInstance("X.509");
             ca = (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(buff));
         } catch (CertificateException e) {
-            e.printStackTrace();
+            Log.e(TAG, e.getMessage(), e);
         }
         return ca;
     }
 
     // get the CA certificate by the path
-    public static X509Certificate getCACertificate(String dir, String caName) {
-        String CERT_FILE = dir + "/burp_export.crt";
-        InputStream inStream = null;
-        try {
-            inStream = new FileInputStream(CERT_FILE);
+    public static X509Certificate getCACertificate(File caFile) {
+        try (InputStream inStream = new FileInputStream(caFile)) {
             CertificateFactory cf = CertificateFactory.getInstance("X.509");
             return (X509Certificate) cf.generateCertificate(inStream);
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            Log.e(TAG, e.getMessage(), e);
+        } catch (IOException e) {
+            Log.e(TAG, e.getMessage(), e);
         } catch (CertificateException e) {
-            e.printStackTrace();
-        } finally {
-            if (inStream != null) {
-                try {
-                    inStream.close();
-                } catch (IOException e) {
-                }
-            }
+            Log.e(TAG, e.getMessage(), e);
         }
         return null;
     }

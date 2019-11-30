@@ -228,7 +228,6 @@ public class Tun2HttpVpnService extends VpnService {
 
         // Native init
         jni_init();
-
         super.onCreate();
 
     }

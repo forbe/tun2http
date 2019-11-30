@@ -148,7 +148,7 @@ public class MainActivity extends AppCompatActivity {
         stop.setEnabled(false);
         updateStatus();
 
-        statusHandler.postDelayed(statusRunnable, 1000);
+        statusHandler.post(statusRunnable);
 
         Intent intent = new Intent(this, Tun2HttpVpnService.class);
         bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
@@ -162,7 +162,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void run() {
         updateStatus();
-        statusHandler.postDelayed(statusRunnable, 1000);
+        statusHandler.post(statusRunnable);
         }
     };
 
@@ -220,12 +220,7 @@ public class MainActivity extends AppCompatActivity {
         if (TextUtils.isEmpty(proxyHost)) {
             return;
         }
-
-        if (proxyPort == 80) {
-            hostEditText.setText(proxyHost);
-        } else {
-            hostEditText.setText(proxyHost + ":" + proxyPort);
-        }
+        hostEditText.setText(proxyHost + ":" + proxyPort);
     }
 
     private boolean parseAndSaveHostPort() {
@@ -240,7 +235,11 @@ public class MainActivity extends AppCompatActivity {
         if (parts.length > 1) {
             try {
                 port = Integer.parseInt(parts[1]);
-            } catch (Exception e) {
+            } catch (NumberFormatException e) {
+                hostEditText.setError(getString(R.string.enter_host));
+                return false;
+            }
+            if (!(0 < port && port < 655536)) {
                 hostEditText.setError(getString(R.string.enter_host));
                 return false;
             }
@@ -271,8 +270,7 @@ public class MainActivity extends AppCompatActivity {
     public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
         switch (requestCode) {
             case 8000: {
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 } else {
                     requestPermission();
                 }

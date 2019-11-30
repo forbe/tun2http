@@ -8,6 +8,7 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.*;
+import android.support.v4.view.MenuCompat;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -102,7 +103,7 @@ public class SimplePreferenceFragment extends PreferenceFragment
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
     public static class PackageListPreferenceFragment extends PreferenceFragment
             implements SearchView.OnQueryTextListener, SearchView.OnCloseListener {
-        final private Map<String, Boolean> mAllPackageInfoMap = new HashMap<String, Boolean>();
+        final private Map<String, Boolean> mAllPackageInfoMap = new HashMap<>();
 
         private MyApplication.VPNMode mode = MyApplication.VPNMode.DISALLOW;
         private MyApplication.AppSortBy appSortBy = MyApplication.AppSortBy.APPNAME;
@@ -149,6 +150,8 @@ public class SimplePreferenceFragment extends PreferenceFragment
             super.onCreateOptionsMenu(menu, inflater);
             // Menuの設定
             inflater.inflate(R.menu.menu_search, menu);
+
+            //MenuCompat.setGroupDividerEnabled(menu, true);
 
             final MenuItem menuItem = menu.findItem(R.id.menu_search_item);
 
@@ -202,11 +205,20 @@ public class SimplePreferenceFragment extends PreferenceFragment
                     return t1.compareTo(t2);
                 }
             });
+
+            final Map<String, Boolean> installedPackageMap = new HashMap<>();
+            for (final PackageInfo pi : installedPackages) {
+                boolean checked = this.mAllPackageInfoMap.containsKey(pi.packageName) ? this.mAllPackageInfoMap.get(pi.packageName) : false;
+                installedPackageMap.put(pi.packageName, checked);
+            }
+            this.mAllPackageInfoMap.clear();
+            this.mAllPackageInfoMap.putAll(installedPackageMap);
+
             for (final PackageInfo pi : installedPackages) {
                 String t1 = pi.applicationInfo.loadLabel(pm).toString();
                 if (filter.trim().isEmpty() || t1.toLowerCase().contains(filter.toLowerCase())) {
                     final Preference preference = buildPackagePreferences(pm, pi);
-                    mFilterPreferenceScreen.addPreference(preference);
+                    this.mFilterPreferenceScreen.addPreference(preference);
                 }
             }
         }
@@ -216,8 +228,8 @@ public class SimplePreferenceFragment extends PreferenceFragment
             prefCheck.setIcon(pi.applicationInfo.loadIcon(pm));
             prefCheck.setTitle(pi.applicationInfo.loadLabel(pm).toString());
             prefCheck.setSummary(pi.packageName);
-            boolean ckecked = this.mAllPackageInfoMap.containsKey(pi.packageName) ? this.mAllPackageInfoMap.get(pi.packageName) : false;
-            prefCheck.setChecked(ckecked);
+            boolean checked = this.mAllPackageInfoMap.containsKey(pi.packageName) ? this.mAllPackageInfoMap.get(pi.packageName) : false;
+            prefCheck.setChecked(checked);
             OnPreferenceClickListener click = new OnPreferenceClickListener() {
                 @Override
                 public boolean onPreferenceClick(Preference preference) {
@@ -255,6 +267,16 @@ public class SimplePreferenceFragment extends PreferenceFragment
             }
         }
 
+        private void  clearAllSelectedPackageSet() {
+            Set<String> selected = this.getFilterSelectedPackageSet();
+            for (Map.Entry<String, Boolean> value : this.mAllPackageInfoMap
+                    .entrySet()) {
+                if (value.getValue()) {
+                    value.setValue(false);
+                }
+            }
+        }
+
         private Set<String>  getAllSelectedPackageSet() {
             Set<String> selected = this.getFilterSelectedPackageSet();
             for (Map.Entry<String, Boolean> value : this.mAllPackageInfoMap.entrySet()) {
@@ -277,6 +299,10 @@ public class SimplePreferenceFragment extends PreferenceFragment
                 case android.R.id.home:
                     startActivity(new Intent(getActivity(), SimplePreferenceActivity.class));
                     return true;
+//                case R.id.menu_clear_all_selected:
+//                    clearAllSelectedPackageSet();
+//                    filter(null);
+//                    break;
                 case R.id.menu_sort_app_name:
                     item.setChecked(!item.isChecked());
                     filter(null, MyApplication.AppSortBy.APPNAME);
