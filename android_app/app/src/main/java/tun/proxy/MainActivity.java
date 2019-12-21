@@ -179,9 +179,11 @@ public class MainActivity extends AppCompatActivity {
         }
         if (isRunning()) {
             start.setEnabled(false);
+            hostEditText.setEnabled(false);
             stop.setEnabled(true);
         } else {
             start.setEnabled(true);
+            hostEditText.setEnabled(true);
             stop.setEnabled(false);
         }
     }
@@ -195,16 +197,18 @@ public class MainActivity extends AppCompatActivity {
     private void startVpn() {
         Intent i = VpnService.prepare(this);
         if (i != null) {
-            startActivityForResult(i, 0);
+            startActivityForResult(i, REQUEST_VPN);
         } else {
-            onActivityResult(0, REQUEST_VPN, null);
+            onActivityResult(REQUEST_VPN, RESULT_OK, null);
         }
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-
+        if (resultCode != RESULT_OK) {
+            return;
+        }
         if (resultCode == REQUEST_VPN && parseAndSaveHostPort()) {
             start.setEnabled(false);
             stop.setEnabled(true);
