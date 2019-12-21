@@ -81,7 +81,7 @@ public class MainActivity extends AppCompatActivity {
         stop.setEnabled(false);
 
         loadHostPort();
-        requestPermission();
+//        requestPermission();
     }
 
     @Override
@@ -209,7 +209,7 @@ public class MainActivity extends AppCompatActivity {
         if (resultCode != RESULT_OK) {
             return;
         }
-        if (resultCode == REQUEST_VPN && parseAndSaveHostPort()) {
+        if (requestCode == REQUEST_VPN && parseAndSaveHostPort()) {
             start.setEnabled(false);
             stop.setEnabled(true);
             Tun2HttpVpnService.start(this);
@@ -264,23 +264,23 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
-    private void requestPermission() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {//Can add more as per requirement
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 8000);
-        }
-    }
+//    private void requestPermission() {
+//        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {//Can add more as per requirement
+//            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 8000);
+//        }
+//    }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
-        switch (requestCode) {
-            case 8000: {
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                } else {
-                    requestPermission();
-                }
-                return;
-            }
-        }
-    }
+//    @Override
+//    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+//        switch (requestCode) {
+//            case 8000: {
+//                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+//                } else {
+//                    requestPermission();
+//                }
+//                return;
+//            }
+//        }
+//    }
 
 }
