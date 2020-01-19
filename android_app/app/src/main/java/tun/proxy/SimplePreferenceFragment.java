@@ -1,7 +1,9 @@
 package tun.proxy;
 
+import android.app.AlertDialog;
 import android.annotation.TargetApi;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -29,6 +31,7 @@ public class SimplePreferenceFragment extends PreferenceFragment
     public static final String VPN_CONNECTION_MODE = "vpn_connection_mode";
     public static final String VPN_DISALLOWED_APPLICATION_LIST = "vpn_disallowed_application_list";
     public static final String VPN_ALLOWED_APPLICATION_LIST = "vpn_allowed_application_list";
+    public static final String VPN_CLEAR_ALL_SELECTION = "vpn_clear_all_selection";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -40,8 +43,10 @@ public class SimplePreferenceFragment extends PreferenceFragment
         final ListPreference prefPackage = (ListPreference) this.findPreference(VPN_CONNECTION_MODE);
         final PreferenceScreen prefDisallow = (PreferenceScreen) findPreference(VPN_DISALLOWED_APPLICATION_LIST);
         final PreferenceScreen prefAllow = (PreferenceScreen) findPreference(VPN_ALLOWED_APPLICATION_LIST);
+        final PreferenceScreen clearAllSelection = (PreferenceScreen) findPreference(VPN_CLEAR_ALL_SELECTION);
         prefDisallow.setOnPreferenceClickListener(this);
         prefAllow.setOnPreferenceClickListener(this);
+        clearAllSelection.setOnPreferenceClickListener(this);
 
         prefPackage.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
             @Override
@@ -63,6 +68,18 @@ public class SimplePreferenceFragment extends PreferenceFragment
         prefDisallow.setEnabled(MyApplication.VPNMode.DISALLOW.name().equals(prefPackage.getValue()));
         prefAllow.setEnabled(MyApplication.VPNMode.ALLOW.name().equals(prefPackage.getValue()));
 
+        updateMenuItem();
+
+    }
+
+    private void updateMenuItem() {
+        final PreferenceScreen prefDisallow = (PreferenceScreen) findPreference(VPN_DISALLOWED_APPLICATION_LIST);
+        final PreferenceScreen prefAllow = (PreferenceScreen) findPreference(VPN_ALLOWED_APPLICATION_LIST);
+
+        int countDisallow = MyApplication.getInstance().loadVPNApplication(MyApplication.VPNMode.DISALLOW).size();
+        int countAllow = MyApplication.getInstance().loadVPNApplication(MyApplication.VPNMode.ALLOW).size();
+        prefDisallow.setTitle(getString(R.string.pref_disallowed_application_list) + String.format(" (%d)",countDisallow));
+        prefAllow.setTitle(getString(R.string.pref_allowed_application_list) + String.format(" (%d)",countAllow));
     }
 
     @Override
@@ -87,9 +104,28 @@ public class SimplePreferenceFragment extends PreferenceFragment
             case VPN_ALLOWED_APPLICATION_LIST:
                 transitionFragment(PackageListPreferenceFragment.newInstance(MyApplication.VPNMode.ALLOW));
                 break;
+            case VPN_CLEAR_ALL_SELECTION:
+                new AlertDialog.Builder(getActivity())
+                        .setTitle(getString(R.string.title_activity_settings))
+                        .setMessage(getString(R.string.pref_dialog_clear_all_application_msg))
+                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                Set set = new HashSet();
+                                MyApplication.getInstance().storeVPNApplication(MyApplication.VPNMode.ALLOW, set);
+                                MyApplication.getInstance().storeVPNApplication(MyApplication.VPNMode.DISALLOW, set);
+                                updateMenuItem();
+                            }
+                        })
+                        .setNegativeButton("Cancel", null)
+                        .show();
+
+            break;
         }
         return false;
     }
+
+
 
     private void transitionFragment(PreferenceFragment nextPreferenceFragment) {
         // replaceによるFragmentの切り替えと、addToBackStackで戻るボタンを押した時に前のFragmentに戻るようにする
