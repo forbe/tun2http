@@ -45,6 +45,9 @@ The default is **Disallowed Application** selected.
     Applications that are not selected behave the same as when not using VPN.
     In addition, if none of them are selected, communication of all applications will go through VPN.
 
+* Clear all selection
+  * Clear all selections of Allowed / Disallowed application list.
+
 ### Settings Search
 
 ![Menu Settings](images/Menu-Settings-Search.png) / ![Menu Settings](images/Menu-Settings-SortBy.png)

@@ -47,6 +47,9 @@ Disallowed Application と Allowed Application の２つのモードがありま
     選択されていないアプリは、VPNを利用しない場合と同じ挙動になります。
     なお、一つも選択されていない場合は、すべてのアプリの通信がVPNを経由します。
 
+* Clear all selection
+  * Allowed / Disallowed Application のすべての選択をクリアします。
+
 ### Settings 検索
 
 ![Menu Settings](images/Menu-Settings-Search.png) / ![Menu Settings](images/Menu-Settings-SortBy.png)
