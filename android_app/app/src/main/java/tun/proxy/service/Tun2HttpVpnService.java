@@ -19,6 +19,7 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import java.io.IOException;
+import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,6 +28,7 @@ import java.util.Set;
 
 import tun.proxy.MyApplication;
 import tun.proxy.R;
+import tun.utils.Util;
 
 public class Tun2HttpVpnService extends VpnService {
     public static final String PREF_PROXY_HOST = "pref_proxy_host";
@@ -140,6 +142,12 @@ public class Tun2HttpVpnService extends VpnService {
 
         builder.addRoute("0.0.0.0", 0);
         builder.addRoute("0:0:0:0:0:0:0:0", 0);
+
+        List<String> dnsList = Util.getDefaultDNS(MyApplication.getInstance().getApplicationContext());
+        for (String dns : dnsList) {
+            Log.i(TAG, "default DNS:" + dns);
+            builder.addDnsServer(dns);
+        }
 
         // MTU
         int mtu = jni_get_mtu();
@@ -290,7 +298,7 @@ public class Tun2HttpVpnService extends VpnService {
         private int mtu;
         private List<String> listAddress = new ArrayList<>();
         private List<String> listRoute = new ArrayList<>();
-        private List<InetAddress> listDns = new ArrayList<>();
+        private List<String> listDns = new ArrayList<>();
 
         private Builder() {
             super();
@@ -320,8 +328,15 @@ public class Tun2HttpVpnService extends VpnService {
         }
 
         @Override
-        public Builder addDnsServer(InetAddress address) {
-            listDns.add(address);
+       public Builder addDnsServer(InetAddress address) {
+            listDns.add(address.getHostAddress());
+            super.addDnsServer(address);
+            return this;
+       }
+
+        @Override
+        public Builder addDnsServer(String address) {
+//            listDns.add(address);
             super.addDnsServer(address);
             return this;
         }
@@ -330,7 +345,7 @@ public class Tun2HttpVpnService extends VpnService {
         public Builder addAllowedApplication(List<String> packageList) throws PackageManager.NameNotFoundException {
             //
             for (String pkg : packageList) {
-                System.out.println("allowed:" + pkg);
+                Log.i(TAG, "allowed:" + pkg);
                 addAllowedApplication(pkg);
             }
             return this;
@@ -339,7 +354,7 @@ public class Tun2HttpVpnService extends VpnService {
         public Builder addDisallowedApplication(List<String> packageList) throws PackageManager.NameNotFoundException {
             //
             for (String pkg : packageList) {
-                System.out.println("disallowed:" + pkg);
+                Log.i(TAG, "disallowed:" + pkg);
                 addDisallowedApplication(pkg);
             }
             return this;
@@ -376,7 +391,7 @@ public class Tun2HttpVpnService extends VpnService {
                 if (!other.listRoute.contains(route))
                     return false;
 
-            for (InetAddress dns : this.listDns)
+            for (String dns : this.listDns)
                 if (!other.listDns.contains(dns))
                     return false;
 
