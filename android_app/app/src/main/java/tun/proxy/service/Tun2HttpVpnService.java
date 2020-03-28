@@ -5,7 +5,8 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
+import android.net.Network;
+import android.net.NetworkCapabilities;
 import android.net.VpnService;
 import android.os.Binder;
 import android.os.Build;
@@ -14,7 +15,7 @@ import android.os.Parcel;
 import android.os.ParcelFileDescriptor;
 import android.os.PowerManager;
 import android.os.RemoteException;
-import android.preference.PreferenceManager;
+import androidx.preference.PreferenceManager;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -233,7 +234,6 @@ public class Tun2HttpVpnService extends VpnService {
 
     @Override
     public void onCreate() {
-
         // Native init
         jni_init();
         super.onCreate();
@@ -294,7 +294,6 @@ public class Tun2HttpVpnService extends VpnService {
     }
 
     private class Builder extends VpnService.Builder {
-        private NetworkInfo networkInfo;
         private int mtu;
         private List<String> listAddress = new ArrayList<>();
         private List<String> listRoute = new ArrayList<>();
@@ -302,8 +301,6 @@ public class Tun2HttpVpnService extends VpnService {
 
         private Builder() {
             super();
-            ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-            networkInfo = cm.getActiveNetworkInfo();
         }
 
         @Override
@@ -367,10 +364,6 @@ public class Tun2HttpVpnService extends VpnService {
             if (other == null)
                 return false;
 
-            if (this.networkInfo == null || other.networkInfo == null ||
-                    this.networkInfo.getType() != other.networkInfo.getType())
-                return false;
-
             if (this.mtu != other.mtu)
                 return false;
 
@@ -397,5 +390,25 @@ public class Tun2HttpVpnService extends VpnService {
 
             return true;
         }
+
+//        public boolean isNetworkConnected() {
+//            final ConnectivityManager cm = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
+//            if (cm != null) {
+//                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+//                    final android.net.NetworkInfo ni = cm.getActiveNetworkInfo();
+//                    if (ni != null) {
+//                        return (ni.isConnected() && (ni.getType() == ConnectivityManager.TYPE_WIFI || ni.getType() == ConnectivityManager.TYPE_MOBILE));
+//                    }
+//                } else {
+//                    final Network n = cm.getActiveNetwork();
+//                    if (n != null) {
+//                        final NetworkCapabilities nc = cm.getNetworkCapabilities(n);
+//                        return (nc.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) || nc.hasTransport(NetworkCapabilities.TRANSPORT_WIFI));
+//                    }
+//                }
+//            }
+//            return false;
+//        }
     }
+
 }

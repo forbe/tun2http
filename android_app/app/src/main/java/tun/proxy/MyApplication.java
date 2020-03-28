@@ -1,20 +1,15 @@
 package tun.proxy;
 
 import android.app.Application;
-import android.content.Context;
 import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
+import androidx.preference.PreferenceManager;
 
-import tun.utils.CertificateUtil;
-
-import java.security.cert.CertificateEncodingException;
-import java.security.cert.X509Certificate;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 public class MyApplication extends Application {
+    public static final String PREF_VPN_MODE = "vpn_connection_mode";
+
     private static MyApplication instance;
 
     public static MyApplication getInstance() {
@@ -27,21 +22,6 @@ public class MyApplication extends Application {
         instance = this;
     }
 
-//    public byte [] getTrustCA() {
-//        try {
-//            X509Certificate cert = CertificateUtil.getCACertificate("/sdcard/", "");
-//            return cert.getEncoded();
-//        } catch (CertificateEncodingException e) {
-//            e.printStackTrace();
-//        }
-////        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-////        String trustca_preference = sharedPreferences.getString( "trusted_ca", null );
-////        if (trustca_preference != null)  {
-////            return CertificateUtil.decode(trustca_preference);
-////        }
-//        return null;
-//    }
-
     public enum VPNMode {DISALLOW, ALLOW};
 
     public enum AppSortBy {APPNAME, PKGNAME};
@@ -50,14 +30,14 @@ public class MyApplication extends Application {
 
     public VPNMode loadVPNMode() {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        String vpn_mode = sharedPreferences.getString("vpn_connection_mode", MyApplication.VPNMode.DISALLOW.name());
+        String vpn_mode = sharedPreferences.getString(PREF_VPN_MODE, MyApplication.VPNMode.DISALLOW.name());
         return VPNMode.valueOf(vpn_mode);
     }
 
     public void storeVPNMode(VPNMode mode) {
         final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         final SharedPreferences.Editor editor = prefs.edit();
-        editor.putString("vpn_connection_mode", mode.name());
+        editor.putString(PREF_VPN_MODE, mode.name());
         return;
     }
 

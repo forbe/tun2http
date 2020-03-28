@@ -1,16 +1,23 @@
 package tun.proxy;
 
-import android.app.AlertDialog;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.preference.*;
-import android.support.v4.view.MenuCompat;
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
+import androidx.preference.*;
+
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -24,139 +31,193 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static android.preference.Preference.*;
-
-public class SimplePreferenceFragment extends PreferenceFragment
-        implements OnPreferenceClickListener {
-    public static final String VPN_CONNECTION_MODE = "vpn_connection_mode";
-    public static final String VPN_DISALLOWED_APPLICATION_LIST = "vpn_disallowed_application_list";
-    public static final String VPN_ALLOWED_APPLICATION_LIST = "vpn_allowed_application_list";
-    public static final String VPN_CLEAR_ALL_SELECTION = "vpn_clear_all_selection";
+public class SettingsActivity extends AppCompatActivity {
+    private static final String TAG = "SettingsActivity";
+    private static final String TITLE_TAG = "Settings";
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        addPreferencesFromResource(R.xml.preferences);
-        setHasOptionsMenu(true);
-
-        /* Allowed / Disallowed Application */
-        final ListPreference prefPackage = (ListPreference) this.findPreference(VPN_CONNECTION_MODE);
-        final PreferenceScreen prefDisallow = (PreferenceScreen) findPreference(VPN_DISALLOWED_APPLICATION_LIST);
-        final PreferenceScreen prefAllow = (PreferenceScreen) findPreference(VPN_ALLOWED_APPLICATION_LIST);
-        final PreferenceScreen clearAllSelection = (PreferenceScreen) findPreference(VPN_CLEAR_ALL_SELECTION);
-        prefDisallow.setOnPreferenceClickListener(this);
-        prefAllow.setOnPreferenceClickListener(this);
-        clearAllSelection.setOnPreferenceClickListener(this);
-
-        prefPackage.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
+        setContentView(R.layout.activity_settings);
+        if (savedInstanceState == null) {
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.activity_settings, new SettingsFragment(), "preference_root")
+                    .commit();
+        } else {
+            setTitle(savedInstanceState.getCharSequence(TITLE_TAG));
+        }
+        getSupportFragmentManager().addOnBackStackChangedListener(new FragmentManager.OnBackStackChangedListener() {
             @Override
-            public boolean onPreferenceChange(Preference preference, Object value) {
-            if (preference instanceof ListPreference) {
-                final ListPreference listPreference = (ListPreference) preference;
-                int index = listPreference.findIndexOfValue((String) value);
-                prefDisallow.setEnabled(index == MyApplication.VPNMode.DISALLOW.ordinal());
-                prefAllow.setEnabled(index == MyApplication.VPNMode.ALLOW.ordinal());
-
-                // Set the summary to reflect the new value.
-                preference.setSummary(index >= 0 ? listPreference.getEntries()[index] : null);
-
-            }
-            return true;
+            public void onBackStackChanged() {
+                if (getSupportFragmentManager().getBackStackEntryCount() == 0) {
+                    setTitle(R.string.title_activity_settings);
+                }
             }
         });
-        prefPackage.setSummary(prefPackage.getEntry());
-        prefDisallow.setEnabled(MyApplication.VPNMode.DISALLOW.name().equals(prefPackage.getValue()));
-        prefAllow.setEnabled(MyApplication.VPNMode.ALLOW.name().equals(prefPackage.getValue()));
-
-        updateMenuItem();
-
-    }
-
-    private void updateMenuItem() {
-        final PreferenceScreen prefDisallow = (PreferenceScreen) findPreference(VPN_DISALLOWED_APPLICATION_LIST);
-        final PreferenceScreen prefAllow = (PreferenceScreen) findPreference(VPN_ALLOWED_APPLICATION_LIST);
-
-        int countDisallow = MyApplication.getInstance().loadVPNApplication(MyApplication.VPNMode.DISALLOW).size();
-        int countAllow = MyApplication.getInstance().loadVPNApplication(MyApplication.VPNMode.ALLOW).size();
-        prefDisallow.setTitle(getString(R.string.pref_disallowed_application_list) + String.format(" (%d)",countDisallow));
-        prefAllow.setTitle(getString(R.string.pref_allowed_application_list) + String.format(" (%d)",countAllow));
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+        }
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-        switch (id) {
-            case android.R.id.home:
-                startActivity(new Intent(getActivity(), MainActivity.class));
-                return true;
-        }
-        return super.onOptionsItemSelected(item);
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putCharSequence(TITLE_TAG, getTitle());
     }
 
-    // リスナー部分
     @Override
-    public boolean onPreferenceClick(Preference preference) {
-        // keyを見てクリックされたPreferenceを特定
-        switch (preference.getKey()) {
-            case VPN_DISALLOWED_APPLICATION_LIST:
-                transitionFragment(PackageListPreferenceFragment.newInstance(MyApplication.VPNMode.DISALLOW));
-                break;
-            case VPN_ALLOWED_APPLICATION_LIST:
-                transitionFragment(PackageListPreferenceFragment.newInstance(MyApplication.VPNMode.ALLOW));
-                break;
-            case VPN_CLEAR_ALL_SELECTION:
-                new AlertDialog.Builder(getActivity())
-                        .setTitle(getString(R.string.title_activity_settings))
-                        .setMessage(getString(R.string.pref_dialog_clear_all_application_msg))
-                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                Set set = new HashSet();
-                                MyApplication.getInstance().storeVPNApplication(MyApplication.VPNMode.ALLOW, set);
-                                MyApplication.getInstance().storeVPNApplication(MyApplication.VPNMode.DISALLOW, set);
-                                updateMenuItem();
-                            }
-                        })
-                        .setNegativeButton("Cancel", null)
-                        .show();
-
-            break;
+    public boolean onSupportNavigateUp() {
+        if (getSupportFragmentManager().popBackStackImmediate()) {
+            return true;
         }
-        return false;
+        return super.onSupportNavigateUp();
     }
 
+    /**
+     * Inner Classes.
+     */
 
+    public static class SettingsFragment extends PreferenceFragmentCompat implements Preference.OnPreferenceClickListener {
+        public static final String VPN_CONNECTION_MODE = "vpn_connection_mode";
+        public static final String VPN_DISALLOWED_APPLICATION_LIST = "vpn_disallowed_application_list";
+        public static final String VPN_ALLOWED_APPLICATION_LIST = "vpn_allowed_application_list";
+        public static final String VPN_CLEAR_ALL_SELECTION = "vpn_clear_all_selection";
 
-    private void transitionFragment(PreferenceFragment nextPreferenceFragment) {
-        // replaceによるFragmentの切り替えと、addToBackStackで戻るボタンを押した時に前のFragmentに戻るようにする
-        getFragmentManager()
-            .beginTransaction()
-            .addToBackStack(null)
-            .replace(android.R.id.content, nextPreferenceFragment)
-            .commit();
+        @Override
+        public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
+            addPreferencesFromResource(R.xml.preferences);
+            setHasOptionsMenu(true);
+
+            /* Allowed / Disallowed Application */
+            final ListPreference prefPackage = (ListPreference) this.findPreference(VPN_CONNECTION_MODE);
+            final PreferenceScreen prefDisallow = (PreferenceScreen) findPreference(VPN_DISALLOWED_APPLICATION_LIST);
+            final PreferenceScreen prefAllow = (PreferenceScreen) findPreference(VPN_ALLOWED_APPLICATION_LIST);
+            final PreferenceScreen clearAllSelection = (PreferenceScreen) findPreference(VPN_CLEAR_ALL_SELECTION);
+            clearAllSelection.setOnPreferenceClickListener(this);
+
+            prefPackage.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+                @Override
+                public boolean onPreferenceChange(Preference preference, Object value) {
+                    if (preference instanceof ListPreference) {
+                        final ListPreference listPreference = (ListPreference) preference;
+                        int index = listPreference.findIndexOfValue((String) value);
+                        prefDisallow.setEnabled(index == MyApplication.VPNMode.DISALLOW.ordinal());
+                        prefAllow.setEnabled(index == MyApplication.VPNMode.ALLOW.ordinal());
+
+                        // Set the summary to reflect the new value.
+                        preference.setSummary(index >= 0 ? listPreference.getEntries()[index] : null);
+
+                    }
+                    return true;
+                }
+            });
+            prefPackage.setSummary(prefPackage.getEntry());
+            prefDisallow.setEnabled(MyApplication.VPNMode.DISALLOW.name().equals(prefPackage.getValue()));
+            prefAllow.setEnabled(MyApplication.VPNMode.ALLOW.name().equals(prefPackage.getValue()));
+
+            updateMenuItem();
+        }
+
+        private void updateMenuItem() {
+            final PreferenceScreen prefDisallow = (PreferenceScreen) findPreference(VPN_DISALLOWED_APPLICATION_LIST);
+            final PreferenceScreen prefAllow = (PreferenceScreen) findPreference(VPN_ALLOWED_APPLICATION_LIST);
+
+            int countDisallow = MyApplication.getInstance().loadVPNApplication(MyApplication.VPNMode.DISALLOW).size();
+            int countAllow = MyApplication.getInstance().loadVPNApplication(MyApplication.VPNMode.ALLOW).size();
+            prefDisallow.setTitle(getString(R.string.pref_header_disallowed_application_list) + String.format(" (%d)", countDisallow));
+            prefAllow.setTitle(getString(R.string.pref_header_disallowed_application_list) + String.format(" (%d)", countAllow));
+        }
+
+        // リスナー部分
+        @Override
+        public boolean onPreferenceClick(Preference preference) {
+            // keyを見てクリックされたPreferenceを特定
+            switch (preference.getKey()) {
+                case VPN_DISALLOWED_APPLICATION_LIST:
+                case VPN_ALLOWED_APPLICATION_LIST:
+//                    transitionFragment(PackageListPreferenceFragment.newInstance(MyApplication.VPNMode.ALLOW), preference.getKey());
+                    break;
+                case VPN_CLEAR_ALL_SELECTION:
+                    new AlertDialog.Builder(getActivity())
+                            .setTitle(getString(R.string.title_activity_settings))
+                            .setMessage(getString(R.string.pref_dialog_clear_all_application_msg))
+                            .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    Set<String> set = new HashSet<>();
+                                    MyApplication.getInstance().storeVPNApplication(MyApplication.VPNMode.ALLOW, set);
+                                    MyApplication.getInstance().storeVPNApplication(MyApplication.VPNMode.DISALLOW, set);
+                                    updateMenuItem();
+                                }
+                            })
+                            .setNegativeButton("Cancel", null)
+                            .show();
+
+                    break;
+            }
+            return false;
+        }
+
+    }
+
+    /*
+     * https://developer.android.com/guide/topics/ui/settings/organize-your-settings
+     */
+
+    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
+    public static class DisallowedPackageListFragment extends PackageListFragment
+    {
+        public DisallowedPackageListFragment() {
+            super(MyApplication.VPNMode.DISALLOW);
+        }
     }
 
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-    public static class PackageListPreferenceFragment extends PreferenceFragment
-            implements SearchView.OnQueryTextListener, SearchView.OnCloseListener {
-        final private Map<String, Boolean> mAllPackageInfoMap = new HashMap<>();
+    public static class AllowedPackageListFragment extends PackageListFragment
+    {
+        public AllowedPackageListFragment() {
+            super(MyApplication.VPNMode.ALLOW);
+        }
+    }
 
-        private MyApplication.VPNMode mode = MyApplication.VPNMode.DISALLOW;
+    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
+    protected static class PackageListFragment extends PreferenceFragmentCompat
+            implements SearchView.OnQueryTextListener, SearchView.OnCloseListener {
+        private final Map<String, Boolean> mAllPackageInfoMap = new HashMap<>();
+
+        private MyApplication.VPNMode mode;
         private MyApplication.AppSortBy appSortBy = MyApplication.AppSortBy.APPNAME;
         private PreferenceScreen mFilterPreferenceScreen;
 
-        public static PackageListPreferenceFragment newInstance(MyApplication.VPNMode mode) {
-            final PackageListPreferenceFragment fragment = new PackageListPreferenceFragment();
-            fragment.mode = mode;
-            return fragment;
+        public PackageListFragment(MyApplication.VPNMode mode) {
+            super();
+            this.mode = mode;
         }
 
         @Override
-        public void onCreate(Bundle savedInstanceState) {
-            super.onCreate(savedInstanceState);
+        public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
             setHasOptionsMenu(true);
             mFilterPreferenceScreen = getPreferenceManager().createPreferenceScreen(getActivity());
             setPreferenceScreen(mFilterPreferenceScreen);
+        }
+
+        @Override
+        public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+            super.onCreateOptionsMenu(menu, inflater);
+            // Menuの設定
+            inflater.inflate(R.menu.menu_search, menu);
+
+            //MenuCompat.setGroupDividerEnabled(menu, true);
+
+            final MenuItem menuItem = menu.findItem(R.id.menu_search_item);
+
+            this.searchView = (SearchView) menuItem.getActionView();
+            this.searchView.setOnQueryTextListener(this);
+            this.searchView.setOnCloseListener(this);
+            this.searchView.setSubmitButtonEnabled(false);
+
         }
 
         private String searchFilter = "";
@@ -179,23 +240,6 @@ public class SimplePreferenceFragment extends PreferenceFragment
 
             this.removeAllPreferenceScreen();
             this.filterPackagesPreferences(filter, sortBy);
-        }
-
-        @Override
-        public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-            super.onCreateOptionsMenu(menu, inflater);
-            // Menuの設定
-            inflater.inflate(R.menu.menu_search, menu);
-
-            //MenuCompat.setGroupDividerEnabled(menu, true);
-
-            final MenuItem menuItem = menu.findItem(R.id.menu_search_item);
-
-            this.searchView = (SearchView) menuItem.getActionView();
-            this.searchView.setOnQueryTextListener(this);
-            this.searchView.setOnCloseListener(this);
-            this.searchView.setSubmitButtonEnabled(false);
-
         }
 
         @Override
@@ -266,7 +310,7 @@ public class SimplePreferenceFragment extends PreferenceFragment
             prefCheck.setSummary(pi.packageName);
             boolean checked = this.mAllPackageInfoMap.containsKey(pi.packageName) ? this.mAllPackageInfoMap.get(pi.packageName) : false;
             prefCheck.setChecked(checked);
-            OnPreferenceClickListener click = new OnPreferenceClickListener() {
+            Preference.OnPreferenceClickListener click = new Preference.OnPreferenceClickListener() {
                 @Override
                 public boolean onPreferenceClick(Preference preference) {
                     mAllPackageInfoMap.put(prefCheck.getSummary().toString(), prefCheck.isChecked());
@@ -303,7 +347,7 @@ public class SimplePreferenceFragment extends PreferenceFragment
             }
         }
 
-        private void  clearAllSelectedPackageSet() {
+        private void clearAllSelectedPackageSet() {
             Set<String> selected = this.getFilterSelectedPackageSet();
             for (Map.Entry<String, Boolean> value : this.mAllPackageInfoMap
                     .entrySet()) {
@@ -313,7 +357,7 @@ public class SimplePreferenceFragment extends PreferenceFragment
             }
         }
 
-        private Set<String>  getAllSelectedPackageSet() {
+        private Set<String> getAllSelectedPackageSet() {
             Set<String> selected = this.getFilterSelectedPackageSet();
             for (Map.Entry<String, Boolean> value : this.mAllPackageInfoMap.entrySet()) {
                 if (value.getValue()) {
@@ -333,12 +377,8 @@ public class SimplePreferenceFragment extends PreferenceFragment
             int id = item.getItemId();
             switch (id) {
                 case android.R.id.home:
-                    startActivity(new Intent(getActivity(), SimplePreferenceActivity.class));
+                    startActivity(new Intent(getActivity(), SettingsActivity.class));
                     return true;
-//                case R.id.menu_clear_all_selected:
-//                    clearAllSelectedPackageSet();
-//                    filter(null);
-//                    break;
                 case R.id.menu_sort_app_name:
                     item.setChecked(!item.isChecked());
                     filter(null, MyApplication.AppSortBy.APPNAME);
@@ -378,3 +418,4 @@ public class SimplePreferenceFragment extends PreferenceFragment
     }
 
 }
+

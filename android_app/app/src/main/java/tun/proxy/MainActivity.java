@@ -1,6 +1,8 @@
 package tun.proxy;
 
-import android.Manifest;
+import android.net.VpnService;
+import android.os.Bundle;
+
 import android.app.AlertDialog;
 import android.content.ComponentName;
 import android.content.Context;
@@ -9,31 +11,29 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.net.VpnService;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.fragment.app.Fragment;
+import androidx.preference.Preference;
+import androidx.preference.PreferenceFragmentCompat;
+import androidx.preference.PreferenceManager;
+
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
-import android.preference.PreferenceManager;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
+import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.Button;
-import android.widget.CompoundButton;
 import android.widget.EditText;
-import android.widget.Switch;
-
-import java.util.EnumSet;
-import java.util.Map;
 
 import tun.proxy.service.Tun2HttpVpnService;
 import tun.utils.CertificateUtil;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements
+        PreferenceFragmentCompat.OnPreferenceStartFragmentCallback {
     public static final int REQUEST_VPN = 1;
     public static final int REQUEST_CERT = 2;
 
@@ -49,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         start = findViewById(R.id.start);
@@ -59,16 +59,7 @@ public class MainActivity extends AppCompatActivity {
         start.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                MyApplication app = (MyApplication) getApplicationContext();
-//                byte [] trust_ca = app.getTrustCA();
-//                if (trust_ca != null) {
-//                    Intent intent = CertificateUtil.trustRootCA(CertificateUtil.getCACertificate(trust_ca));
-//                    if (intent != null) {
-//                        startActivityForResult(intent, REQUEST_CERT);
-//                    } else {
                 startVpn();
-//                    }
-//                }
             }
         });
         stop.setOnClickListener(new View.OnClickListener() {
@@ -81,7 +72,20 @@ public class MainActivity extends AppCompatActivity {
         stop.setEnabled(false);
 
         loadHostPort();
-//        requestPermission();
+
+    }
+    @Override
+    public boolean onPreferenceStartFragment(PreferenceFragmentCompat caller, Preference pref) {
+        final Bundle args = pref.getExtras();
+        final Fragment fragment = getSupportFragmentManager().getFragmentFactory().instantiate(getClassLoader(), pref.getFragment());
+        fragment.setArguments(args);
+        fragment.setTargetFragment(caller, 0);
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.activity_settings, fragment)
+                .addToBackStack(null)
+                .commit();
+        setTitle(pref.getTitle());
+        return true;
     }
 
     @Override
@@ -100,9 +104,12 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
         switch (item.getItemId()) {
             case R.id.action_activity_settings:
-                Intent intent = new android.content.Intent(this, SimplePreferenceActivity.class);
+                Intent intent = new android.content.Intent(this, SettingsActivity.class);
                 startActivity(intent);
                 break;
             case R.id.action_show_about:
@@ -161,8 +168,8 @@ public class MainActivity extends AppCompatActivity {
     Runnable statusRunnable = new Runnable() {
         @Override
         public void run() {
-        updateStatus();
-        statusHandler.post(statusRunnable);
+            updateStatus();
+            statusHandler.post(statusRunnable);
         }
     };
 
@@ -194,8 +201,7 @@ public class MainActivity extends AppCompatActivity {
         Tun2HttpVpnService.stop(this);
     }
 
-    private void startVpn() {
-        Intent i = VpnService.prepare(this);
+    private void startVpn() { Intent i = VpnService.prepare(this);
         if (i != null) {
             startActivityForResult(i, REQUEST_VPN);
         } else {
@@ -256,31 +262,9 @@ public class MainActivity extends AppCompatActivity {
         String host = parts[0];
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         SharedPreferences.Editor edit = prefs.edit();
-
         edit.putString(Tun2HttpVpnService.PREF_PROXY_HOST, host);
         edit.putInt(Tun2HttpVpnService.PREF_PROXY_PORT, port);
-
         edit.commit();
         return true;
     }
-
-//    private void requestPermission() {
-//        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {//Can add more as per requirement
-//            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 8000);
-//        }
-//    }
-
-//    @Override
-//    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
-//        switch (requestCode) {
-//            case 8000: {
-//                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-//                } else {
-//                    requestPermission();
-//                }
-//                return;
-//            }
-//        }
-//    }
-
 }
