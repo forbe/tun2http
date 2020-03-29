@@ -7,7 +7,7 @@
     <string name="start">Start</string>
     <string name="stop">Stop</string>
     <string name="msg_start_failed">Start failed</string>
-    <string name="host_hint">Proxy address (host:port)</string>
+    <string name="host_hint">Proxy address (ipv4:port)</string>
     <string name="enter_host">Enter valid ip v4 address</string>
 
     <!-- Main menu -->

@@ -4,7 +4,6 @@
         android:key="vpn_connection_setting"
         android:title="VPN connection setting"
         android:enabled="true">
-
         <ListPreference
             android:key="vpn_connection_mode"
             android:title="@string/pref_vpn_connection_mode"

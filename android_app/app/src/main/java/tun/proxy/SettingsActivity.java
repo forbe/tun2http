@@ -4,7 +4,6 @@ import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Build;
@@ -12,9 +11,7 @@ import android.os.Bundle;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
 import androidx.preference.*;
 
 import android.util.Log;
@@ -100,17 +97,17 @@ public class SettingsActivity extends AppCompatActivity {
             prefPackage.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
                 @Override
                 public boolean onPreferenceChange(Preference preference, Object value) {
-                    if (preference instanceof ListPreference) {
-                        final ListPreference listPreference = (ListPreference) preference;
-                        int index = listPreference.findIndexOfValue((String) value);
-                        prefDisallow.setEnabled(index == MyApplication.VPNMode.DISALLOW.ordinal());
-                        prefAllow.setEnabled(index == MyApplication.VPNMode.ALLOW.ordinal());
+                if (preference instanceof ListPreference) {
+                    final ListPreference listPreference = (ListPreference) preference;
+                    int index = listPreference.findIndexOfValue((String) value);
+                    prefDisallow.setEnabled(index == MyApplication.VPNMode.DISALLOW.ordinal());
+                    prefAllow.setEnabled(index == MyApplication.VPNMode.ALLOW.ordinal());
 
-                        // Set the summary to reflect the new value.
-                        preference.setSummary(index >= 0 ? listPreference.getEntries()[index] : null);
+                    // Set the summary to reflect the new value.
+                    preference.setSummary(index >= 0 ? listPreference.getEntries()[index] : null);
 
-                    }
-                    return true;
+                }
+                return true;
                 }
             });
             prefPackage.setSummary(prefPackage.getEntry());
@@ -127,8 +124,12 @@ public class SettingsActivity extends AppCompatActivity {
             int countDisallow = MyApplication.getInstance().loadVPNApplication(MyApplication.VPNMode.DISALLOW).size();
             int countAllow = MyApplication.getInstance().loadVPNApplication(MyApplication.VPNMode.ALLOW).size();
             prefDisallow.setTitle(getString(R.string.pref_header_disallowed_application_list) + String.format(" (%d)", countDisallow));
-            prefAllow.setTitle(getString(R.string.pref_header_disallowed_application_list) + String.format(" (%d)", countAllow));
+            prefAllow.setTitle(getString(R.string.pref_header_allowed_application_list) + String.format(" (%d)", countAllow));
         }
+
+        /*
+         * https://developer.android.com/guide/topics/ui/settings/organize-your-settings
+         */
 
         // リスナー部分
         @Override
@@ -137,34 +138,28 @@ public class SettingsActivity extends AppCompatActivity {
             switch (preference.getKey()) {
                 case VPN_DISALLOWED_APPLICATION_LIST:
                 case VPN_ALLOWED_APPLICATION_LIST:
-//                    transitionFragment(PackageListPreferenceFragment.newInstance(MyApplication.VPNMode.ALLOW), preference.getKey());
                     break;
                 case VPN_CLEAR_ALL_SELECTION:
                     new AlertDialog.Builder(getActivity())
-                            .setTitle(getString(R.string.title_activity_settings))
-                            .setMessage(getString(R.string.pref_dialog_clear_all_application_msg))
-                            .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    Set<String> set = new HashSet<>();
-                                    MyApplication.getInstance().storeVPNApplication(MyApplication.VPNMode.ALLOW, set);
-                                    MyApplication.getInstance().storeVPNApplication(MyApplication.VPNMode.DISALLOW, set);
-                                    updateMenuItem();
-                                }
-                            })
-                            .setNegativeButton("Cancel", null)
-                            .show();
-
+                        .setTitle(getString(R.string.title_activity_settings))
+                        .setMessage(getString(R.string.pref_dialog_clear_all_application_msg))
+                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                Set<String> set = new HashSet<>();
+                                MyApplication.getInstance().storeVPNApplication(MyApplication.VPNMode.ALLOW, set);
+                                MyApplication.getInstance().storeVPNApplication(MyApplication.VPNMode.DISALLOW, set);
+                                updateMenuItem();
+                            }
+                        })
+                        .setNegativeButton("Cancel", null)
+                        .show();
                     break;
             }
             return false;
         }
 
     }
-
-    /*
-     * https://developer.android.com/guide/topics/ui/settings/organize-your-settings
-     */
 
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
     public static class DisallowedPackageListFragment extends PackageListFragment
@@ -212,12 +207,10 @@ public class SettingsActivity extends AppCompatActivity {
             //MenuCompat.setGroupDividerEnabled(menu, true);
 
             final MenuItem menuItem = menu.findItem(R.id.menu_search_item);
-
             this.searchView = (SearchView) menuItem.getActionView();
             this.searchView.setOnQueryTextListener(this);
             this.searchView.setOnCloseListener(this);
             this.searchView.setSubmitButtonEnabled(false);
-
         }
 
         private String searchFilter = "";
@@ -288,6 +281,10 @@ public class SettingsActivity extends AppCompatActivity {
 
             final Map<String, Boolean> installedPackageMap = new HashMap<>();
             for (final PackageInfo pi : installedPackages) {
+                // exclude self package
+                if (pi.packageName.equals(MyApplication.getInstance().getPackageName())) {
+                    continue;
+                }
                 boolean checked = this.mAllPackageInfoMap.containsKey(pi.packageName) ? this.mAllPackageInfoMap.get(pi.packageName) : false;
                 installedPackageMap.put(pi.packageName, checked);
             }
@@ -295,6 +292,10 @@ public class SettingsActivity extends AppCompatActivity {
             this.mAllPackageInfoMap.putAll(installedPackageMap);
 
             for (final PackageInfo pi : installedPackages) {
+                // exclude self package
+                if (pi.packageName.equals(MyApplication.getInstance().getPackageName())) {
+                    continue;
+                }
                 String t1 = pi.applicationInfo.loadLabel(pm).toString();
                 if (filter.trim().isEmpty() || t1.toLowerCase().contains(filter.toLowerCase())) {
                     final Preference preference = buildPackagePreferences(pm, pi);

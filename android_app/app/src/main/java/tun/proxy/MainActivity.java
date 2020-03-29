@@ -23,6 +23,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -31,6 +32,7 @@ import android.widget.EditText;
 
 import tun.proxy.service.Tun2HttpVpnService;
 import tun.utils.CertificateUtil;
+import tun.utils.IPUtil;
 
 public class MainActivity extends AppCompatActivity implements
         PreferenceFragmentCompat.OnPreferenceStartFragmentCallback {
@@ -124,7 +126,7 @@ public class MainActivity extends AppCompatActivity implements
         return true;
     }
 
-    String getVersionName() {
+    protected String getVersionName() {
         PackageManager packageManager = getPackageManager();
         if (packageManager == null) {
             return null;
@@ -201,7 +203,8 @@ public class MainActivity extends AppCompatActivity implements
         Tun2HttpVpnService.stop(this);
     }
 
-    private void startVpn() { Intent i = VpnService.prepare(this);
+    private void startVpn() {
+        Intent i = VpnService.prepare(this);
         if (i != null) {
             startActivityForResult(i, REQUEST_VPN);
         } else {
@@ -235,11 +238,10 @@ public class MainActivity extends AppCompatActivity implements
 
     private boolean parseAndSaveHostPort() {
         String hostPort = hostEditText.getText().toString();
-        if (hostPort.isEmpty()) {
+        if (!IPUtil.isValidIPv4Address(hostPort)) {
             hostEditText.setError(getString(R.string.enter_host));
             return false;
         }
-
         String parts[] = hostPort.split(":");
         int port = 0;
         if (parts.length > 1) {
@@ -249,16 +251,8 @@ public class MainActivity extends AppCompatActivity implements
                 hostEditText.setError(getString(R.string.enter_host));
                 return false;
             }
-            if (!(0 < port && port < 655536)) {
-                hostEditText.setError(getString(R.string.enter_host));
-                return false;
-            }
         }
         String[] ipParts = parts[0].split("\\.");
-        if (ipParts.length != 4) {
-            hostEditText.setError(getString(R.string.enter_host));
-            return false;
-        }
         String host = parts[0];
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         SharedPreferences.Editor edit = prefs.edit();

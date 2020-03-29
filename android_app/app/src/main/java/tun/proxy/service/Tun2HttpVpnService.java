@@ -155,21 +155,23 @@ public class Tun2HttpVpnService extends VpnService {
         Log.i(TAG, "MTU=" + mtu);
         builder.setMtu(mtu);
 
-        // Add list of allowed applications
+        // AAdd list of allowed and disallowed applications
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            try {
-                MyApplication app = (MyApplication) this.getApplication();
-                if (app.loadVPNMode() == MyApplication.VPNMode.DISALLOW) {
-                    Set<String> disallow = app.loadVPNApplication(MyApplication.VPNMode.DISALLOW);
-                    Log.d(TAG, "disallowed:" + disallow.size());
-                    builder.addDisallowedApplication(Arrays.asList(disallow.toArray(new String[0])));
-                } else {
-                    Set<String> allow = app.loadVPNApplication(MyApplication.VPNMode.ALLOW);
-                    Log.d(TAG, "allowed:" + allow.size());
-                    builder.addAllowedApplication(Arrays.asList(allow.toArray(new String[0])));
-                }
-            } catch (PackageManager.NameNotFoundException e) {
-                Log.e(TAG, e.getMessage(), e);
+            MyApplication app = (MyApplication) this.getApplication();
+            if (app.loadVPNMode() == MyApplication.VPNMode.DISALLOW) {
+                Set<String> disallow = app.loadVPNApplication(MyApplication.VPNMode.DISALLOW);
+                Log.d(TAG, "disallowed:" + disallow.size());
+                List<String> notFoundPackageList = new ArrayList<>();
+                builder.addDisallowedApplication(Arrays.asList(disallow.toArray(new String[0])), notFoundPackageList);
+                disallow.removeAll(notFoundPackageList);
+                MyApplication.getInstance().storeVPNApplication(MyApplication.VPNMode.DISALLOW, disallow);
+            } else {
+                Set<String> allow = app.loadVPNApplication(MyApplication.VPNMode.ALLOW);
+                Log.d(TAG, "allowed:" + allow.size());
+                List<String> notFoundPackageList = new ArrayList<>();
+                builder.addAllowedApplication(Arrays.asList(allow.toArray(new String[0])), notFoundPackageList);
+                allow.removeAll(notFoundPackageList);
+                MyApplication.getInstance().storeVPNApplication(MyApplication.VPNMode.ALLOW, allow);
             }
         }
 
@@ -339,20 +341,36 @@ public class Tun2HttpVpnService extends VpnService {
         }
 
         // min sdk 26
-        public Builder addAllowedApplication(List<String> packageList) throws PackageManager.NameNotFoundException {
-            //
+        public Builder addAllowedApplication(final List<String> packageList, final List<String> notFoundPackegeList)  {
             for (String pkg : packageList) {
-                Log.i(TAG, "allowed:" + pkg);
-                addAllowedApplication(pkg);
+                try {
+                    Log.i(TAG, "allowed:" + pkg);
+                    addAllowedApplication(pkg);
+                } catch (PackageManager.NameNotFoundException e) {
+                    notFoundPackegeList.add(pkg);
+                }
             }
             return this;
         }
 
-        public Builder addDisallowedApplication(List<String> packageList) throws PackageManager.NameNotFoundException {
+        public Builder addDisallowedApplication(final List<String> packageList) throws PackageManager.NameNotFoundException {
             //
             for (String pkg : packageList) {
                 Log.i(TAG, "disallowed:" + pkg);
                 addDisallowedApplication(pkg);
+            }
+            return this;
+        }
+
+        public Builder addDisallowedApplication(final List<String> packageList, final List<String> notFoundPackegeList)  {
+            //
+            for (String pkg : packageList) {
+                try {
+                    Log.i(TAG, "disallowed:" + pkg);
+                    addDisallowedApplication(pkg);
+                } catch (PackageManager.NameNotFoundException e) {
+                    notFoundPackegeList.add(pkg);
+                }
             }
             return this;
         }
