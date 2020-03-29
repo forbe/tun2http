@@ -4,6 +4,7 @@ import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Build;
@@ -38,18 +39,18 @@ public class SettingsActivity extends AppCompatActivity {
         setContentView(R.layout.activity_settings);
         if (savedInstanceState == null) {
             getSupportFragmentManager()
-                    .beginTransaction()
-                    .replace(R.id.activity_settings, new SettingsFragment(), "preference_root")
-                    .commit();
+                .beginTransaction()
+                .replace(R.id.activity_settings, new SettingsFragment(), "preference_root")
+                .commit();
         } else {
             setTitle(savedInstanceState.getCharSequence(TITLE_TAG));
         }
         getSupportFragmentManager().addOnBackStackChangedListener(new FragmentManager.OnBackStackChangedListener() {
             @Override
             public void onBackStackChanged() {
-                if (getSupportFragmentManager().getBackStackEntryCount() == 0) {
-                    setTitle(R.string.title_activity_settings);
-                }
+            if (getSupportFragmentManager().getBackStackEntryCount() == 0) {
+                setTitle(R.string.title_activity_settings);
+            }
             }
         });
         ActionBar actionBar = getSupportActionBar();
@@ -162,16 +163,14 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-    public static class DisallowedPackageListFragment extends PackageListFragment
-    {
+    public static class DisallowedPackageListFragment extends PackageListFragment {
         public DisallowedPackageListFragment() {
             super(MyApplication.VPNMode.DISALLOW);
         }
     }
 
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-    public static class AllowedPackageListFragment extends PackageListFragment
-    {
+    public static class AllowedPackageListFragment extends PackageListFragment  {
         public AllowedPackageListFragment() {
             super(MyApplication.VPNMode.ALLOW);
         }
@@ -181,9 +180,12 @@ public class SettingsActivity extends AppCompatActivity {
     protected static class PackageListFragment extends PreferenceFragmentCompat
             implements SearchView.OnQueryTextListener, SearchView.OnCloseListener {
         private final Map<String, Boolean> mAllPackageInfoMap = new HashMap<>();
+        private final static String PREF_VPN_APPLICATION_SORTBY = "pref_vpn_application_app_sortby";
+        private final static String PREF_VPN_APPLICATION_ORDERBY = "pref_vpn_application_app_orderby";
 
         private MyApplication.VPNMode mode;
         private MyApplication.AppSortBy appSortBy = MyApplication.AppSortBy.APPNAME;
+        private MyApplication.AppOrderBy appOrderBy = MyApplication.AppOrderBy.ASC;
         private PreferenceScreen mFilterPreferenceScreen;
 
         public PackageListFragment(MyApplication.VPNMode mode) {
@@ -203,36 +205,63 @@ public class SettingsActivity extends AppCompatActivity {
             super.onCreateOptionsMenu(menu, inflater);
             // Menuの設定
             inflater.inflate(R.menu.menu_search, menu);
-
             //MenuCompat.setGroupDividerEnabled(menu, true);
 
-            final MenuItem menuItem = menu.findItem(R.id.menu_search_item);
-            this.searchView = (SearchView) menuItem.getActionView();
+            final MenuItem menuSearch = menu.findItem(R.id.menu_search_item);
+            this.searchView = (SearchView) menuSearch.getActionView();
             this.searchView.setOnQueryTextListener(this);
             this.searchView.setOnCloseListener(this);
             this.searchView.setSubmitButtonEnabled(false);
+
+            switch (this.appSortBy) {
+                case APPNAME: {
+                    final MenuItem menuItem = menu.findItem(R.id.menu_sort_app_name);
+                    menuItem.setChecked(true);
+                    break;
+                }
+                case PKGNAME: {
+                    final MenuItem menuItem = menu.findItem(R.id.menu_sort_pkg_name);
+                    menuItem.setChecked(true);
+                    break;
+                }
+            }
+
+            switch (this.appOrderBy) {
+                case ASC: {
+                    final MenuItem menuItem = menu.findItem(R.id.menu_sort_order_asc);
+                    menuItem.setChecked(true);
+                    break;
+                }
+                case DESC: {
+                    final MenuItem menuItem = menu.findItem(R.id.menu_sort_order_desc);
+                    menuItem.setChecked(true);
+                    break;
+                }
+            }
+
         }
 
         private String searchFilter = "";
         private SearchView searchView;
 
         protected void filter(String filter) {
-            this.filter(filter, this.appSortBy);
+            this.filter(filter, this.appSortBy, this.appOrderBy);
         }
 
-        protected void filter(String filter, final MyApplication.AppSortBy sortBy) {
+        protected void filter(String filter, final MyApplication.AppSortBy sortBy, final MyApplication.AppOrderBy orderBy) {
             if (filter == null) {
                 filter = searchFilter;
             } else {
                 searchFilter = filter;
             }
             this.appSortBy = sortBy;
+            this.appOrderBy = orderBy;
 
             Set<String> selected = this.getAllSelectedPackageSet();
             storeSelectedPackageSet(selected);
 
             this.removeAllPreferenceScreen();
-            this.filterPackagesPreferences(filter, sortBy);
+            this.filterPackagesPreferences(filter, sortBy, orderBy);
         }
 
         @Override
@@ -240,6 +269,12 @@ public class SettingsActivity extends AppCompatActivity {
             super.onPause();
             Set<String> selected = this.getAllSelectedPackageSet();
             storeSelectedPackageSet(selected);
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(MyApplication.getInstance().getApplicationContext());
+            SharedPreferences.Editor edit = prefs.edit();
+            edit.putString(PREF_VPN_APPLICATION_SORTBY, this.appSortBy.name());
+            edit.putString(PREF_VPN_APPLICATION_ORDERBY, this.appOrderBy.name());
+            edit.apply();
+            Log.i("onPause", this.appSortBy.name());
         }
 
         @Override
@@ -249,6 +284,12 @@ public class SettingsActivity extends AppCompatActivity {
             for (String pkgName : loadMap) {
                 this.mAllPackageInfoMap.put(pkgName, loadMap.contains(pkgName));
             }
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(MyApplication.getInstance().getApplicationContext());
+            String appSortBy = prefs.getString(PREF_VPN_APPLICATION_SORTBY, MyApplication.AppSortBy.APPNAME.name());
+            String appOrderBy = prefs.getString(PREF_VPN_APPLICATION_ORDERBY, MyApplication.AppOrderBy.ASC.name());
+            this.appSortBy = Enum.valueOf(MyApplication.AppSortBy.class, appSortBy);
+            this.appOrderBy = Enum.valueOf(MyApplication.AppOrderBy.class, appOrderBy);
+            Log.i("onResume", this.appSortBy.name());
             filter(null);
         }
 
@@ -256,7 +297,7 @@ public class SettingsActivity extends AppCompatActivity {
             mFilterPreferenceScreen.removeAll();
         }
 
-        private void filterPackagesPreferences(String filter, final MyApplication.AppSortBy sortBy) {
+        private void filterPackagesPreferences(String filter, final MyApplication.AppSortBy sortBy, final MyApplication.AppOrderBy orderBy) {
             final Context context = MyApplication.getInstance().getApplicationContext();
             final PackageManager pm = context.getPackageManager();
             final List<PackageInfo> installedPackages = pm.getInstalledPackages(PackageManager.GET_META_DATA);
@@ -275,7 +316,10 @@ public class SettingsActivity extends AppCompatActivity {
                             t2 = o2.packageName;
                             break;
                     }
-                    return t1.compareTo(t2);
+                    if (MyApplication.AppOrderBy.ASC.equals(orderBy))
+                        return t1.compareTo(t2);
+                    else
+                        return t2.compareTo(t1);
                 }
             });
 
@@ -369,7 +413,6 @@ public class SettingsActivity extends AppCompatActivity {
         }
 
         private void storeSelectedPackageSet(final Set<String> set) {
-            MyApplication.getInstance().storeVPNMode(this.mode);
             MyApplication.getInstance().storeVPNApplication(this.mode, set);
         }
 
@@ -382,11 +425,19 @@ public class SettingsActivity extends AppCompatActivity {
                     return true;
                 case R.id.menu_sort_app_name:
                     item.setChecked(!item.isChecked());
-                    filter(null, MyApplication.AppSortBy.APPNAME);
+                    filter(null, MyApplication.AppSortBy.APPNAME, appOrderBy);
                     break;
                 case R.id.menu_sort_pkg_name:
                     item.setChecked(!item.isChecked());
-                    filter(null, MyApplication.AppSortBy.PKGNAME);
+                    filter(null, MyApplication.AppSortBy.PKGNAME, appOrderBy);
+                    break;
+                case R.id.menu_sort_order_asc:
+                    item.setChecked(!item.isChecked());
+                    filter(null, appSortBy, MyApplication.AppOrderBy.ASC);
+                    break;
+                case R.id.menu_sort_order_desc:
+                    item.setChecked(!item.isChecked());
+                    filter(null, appSortBy, MyApplication.AppOrderBy.DESC);
                     break;
             }
             return super.onOptionsItemSelected(item);

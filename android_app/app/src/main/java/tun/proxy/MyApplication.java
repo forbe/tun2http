@@ -8,7 +8,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class MyApplication extends Application {
-    public static final String PREF_VPN_MODE = "vpn_connection_mode";
+    private final static String PREF_VPN_MODE = "pref_vpn_connection_mode";
+    private final static String PREF_APP_KEY[] = {"pref_vpn_disallowed_application", "pref_vpn_allowed_application"};
 
     private static MyApplication instance;
 
@@ -23,10 +24,9 @@ public class MyApplication extends Application {
     }
 
     public enum VPNMode {DISALLOW, ALLOW};
-
     public enum AppSortBy {APPNAME, PKGNAME};
-
-    private final String pref_key[] = {"vpn_disallowed_application", "vpn_allowed_application"};
+    public enum AppOrderBy {ASC, DESC};
+    public enum AppFiltertBy {APPNAME, PKGNAME};
 
     public VPNMode loadVPNMode() {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
@@ -37,21 +37,20 @@ public class MyApplication extends Application {
     public void storeVPNMode(VPNMode mode) {
         final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         final SharedPreferences.Editor editor = prefs.edit();
-        editor.putString(PREF_VPN_MODE, mode.name());
+        editor.putString(PREF_VPN_MODE, mode.name()).apply();
         return;
     }
 
     public Set<String> loadVPNApplication(VPNMode mode) {
         final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        Set<String> preference = prefs.getStringSet(pref_key[mode.ordinal()], new HashSet<String>());
+        Set<String> preference = prefs.getStringSet(PREF_APP_KEY[mode.ordinal()], new HashSet<String>());
         return preference;
     }
 
     public void storeVPNApplication(VPNMode mode, final Set<String> set) {
         final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         final SharedPreferences.Editor editor = prefs.edit();
-        editor.putStringSet(pref_key[mode.ordinal()], set);
-        editor.commit();
+        editor.putStringSet(PREF_APP_KEY[mode.ordinal()], set).apply();
         return;
     }
 
