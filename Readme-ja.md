@@ -14,8 +14,8 @@ TunProxyアプリを起動すると以下の画面が起動します。
 
 ![Tun Proxy](images/TunProxy.png)
 
-* Proxy address (host:port)
-  * 接続先のプロキシサーバを **IPアドレス:ポート番号** の形式で指定します。
+* Proxy address (ipv4:port)
+  * 接続先のプロキシサーバを **IPv4アドレス:ポート番号** の形式で指定します。
      IPアドレスはIPv4形式で記載する必要があります。
 
 * [Start] ボタン
@@ -59,11 +59,17 @@ Disallowed Application と Allowed Application の２つのモードがありま
 
 プリケーションリストは、画面上部のメニューアイコン(![Menu](images/Menu.png))からソートできます。
 
-* アプリ名で並べ替え
+* sort by app name
   * アプリケーション名でアプリケーションリストを並べ替えます。
 
-* パッケージ名で並べ替え
+* sort by package name
   * パッケージ名でアプリケーションリストを並べ替えます。
+
+* order by asc
+  * 昇順にソートします
+
+* order by desc
+  * 降順にソートします
 
 ### MITM (SSL 復号化)
 
@@ -109,5 +115,5 @@ SSLを復号化するには、ローカルプロキシツールのRoot証明書�
 
 ## 開発環境
 
-* JRE(JDK) 1.8以上(Oracle JRE) (http://www.oracle.com/technetwork/java/javase/downloads/index.html)
-* AndroidStudio 3.4.2 (https://developer.android.com/studio/index.html)
+* JRE(JDK) 1.8以上(Open JDK)
+* AndroidStudio 3.6.1 (https://developer.android.com/studio/index.html)

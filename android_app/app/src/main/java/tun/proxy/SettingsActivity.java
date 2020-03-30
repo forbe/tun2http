@@ -107,6 +107,8 @@ public class SettingsActivity extends AppCompatActivity {
                     // Set the summary to reflect the new value.
                     preference.setSummary(index >= 0 ? listPreference.getEntries()[index] : null);
 
+                    MyApplication.VPNMode mode =  MyApplication.VPNMode.values()[index];
+                    MyApplication.getInstance().storeVPNMode(mode);
                 }
                 return true;
                 }
@@ -413,6 +415,7 @@ public class SettingsActivity extends AppCompatActivity {
         }
 
         private void storeSelectedPackageSet(final Set<String> set) {
+            MyApplication.getInstance().storeVPNMode(this.mode);
             MyApplication.getInstance().storeVPNApplication(this.mode, set);
         }
 

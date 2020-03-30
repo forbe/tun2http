@@ -3,8 +3,8 @@ Android HTTP traffic Proxy setting tool
 
 Language/[Japanese](https://github.com/raise-isayan/TunProxy/blob/master/Readme-ja.md)
 
-This tool is a proxy setting tool using Android VPNService.
-It is possible to acquire only HTTP traffic from the specified application.
+This tool is a proxy configuration tool that takes advantage of Android VPNService feature. 
+Only the communication from the specified application can be acquired.
 
 ## how to use
 
@@ -12,8 +12,8 @@ When you start the TunProxy application, the following screen will be launched.
 
 ![Tun Proxy](images/TunProxy.png)
 
-* Proxy address (host:port)
-  * Specify the destination proxy server in the format **IP address:port number**.
+* Proxy address (ipv4:port)
+  * Specify the destination proxy server in the format **IPv4 address:port number**.
     The IP address must be described in IPv4 format.
 
 * [Start] button
@@ -63,6 +63,12 @@ The application list can be sorted from the menu icon  (![Menu](images/Menu.png)
 * sort by package name
   * Sort application list by package name
 
+* order by asc
+  * Sorting in ascending order
+
+* order by desc
+  * Sorting in descending order
+
 ### MITM (SSL decrypt)
 
 TunProxy does not perform SSL decryption. TunProxy acts like a transparent proxy.
@@ -105,5 +111,5 @@ Most of the code was created based on the following applications for creating ap
 
 ## Development environment
 
-* JRE(JDK) 1.8以上(Oracle JRE) (http://www.oracle.com/technetwork/java/javase/downloads/index.html)
-* AndroidStudio 3.4.2 (https://developer.android.com/studio/index.html)
+* JRE(JDK) 1.8以上(Open JDK)
+* AndroidStudio 3.6.1 (https://developer.android.com/studio/index.html)
