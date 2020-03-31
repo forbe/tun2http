@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import androidx.appcompat.app.ActionBar;
@@ -263,7 +264,9 @@ public class SettingsActivity extends AppCompatActivity {
             storeSelectedPackageSet(selected);
 
             this.removeAllPreferenceScreen();
-            this.filterPackagesPreferences(filter, sortBy, orderBy);
+            final AsyncTaskProgress task = new AsyncTaskProgress(this);
+            task.execute("");
+//            this.filterPackagesPreferences(filter, sortBy, orderBy);
         }
 
         @Override
@@ -296,59 +299,59 @@ public class SettingsActivity extends AppCompatActivity {
         }
 
         private void removeAllPreferenceScreen() {
-            mFilterPreferenceScreen.removeAll();
+            this.mFilterPreferenceScreen.removeAll();
         }
 
-        private void filterPackagesPreferences(String filter, final MyApplication.AppSortBy sortBy, final MyApplication.AppOrderBy orderBy) {
-            final Context context = MyApplication.getInstance().getApplicationContext();
-            final PackageManager pm = context.getPackageManager();
-            final List<PackageInfo> installedPackages = pm.getInstalledPackages(PackageManager.GET_META_DATA);
-            Collections.sort(installedPackages, new Comparator<PackageInfo>() {
-                @Override
-                public int compare(PackageInfo o1, PackageInfo o2) {
-                    String t1 = "";
-                    String t2 = "";
-                    switch (sortBy) {
-                        case APPNAME:
-                            t1 = o1.applicationInfo.loadLabel(pm).toString();
-                            t2 = o2.applicationInfo.loadLabel(pm).toString();
-                            break;
-                        case PKGNAME:
-                            t1 = o1.packageName;
-                            t2 = o2.packageName;
-                            break;
-                    }
-                    if (MyApplication.AppOrderBy.ASC.equals(orderBy))
-                        return t1.compareTo(t2);
-                    else
-                        return t2.compareTo(t1);
-                }
-            });
-
-            final Map<String, Boolean> installedPackageMap = new HashMap<>();
-            for (final PackageInfo pi : installedPackages) {
-                // exclude self package
-                if (pi.packageName.equals(MyApplication.getInstance().getPackageName())) {
-                    continue;
-                }
-                boolean checked = this.mAllPackageInfoMap.containsKey(pi.packageName) ? this.mAllPackageInfoMap.get(pi.packageName) : false;
-                installedPackageMap.put(pi.packageName, checked);
-            }
-            this.mAllPackageInfoMap.clear();
-            this.mAllPackageInfoMap.putAll(installedPackageMap);
-
-            for (final PackageInfo pi : installedPackages) {
-                // exclude self package
-                if (pi.packageName.equals(MyApplication.getInstance().getPackageName())) {
-                    continue;
-                }
-                String t1 = pi.applicationInfo.loadLabel(pm).toString();
-                if (filter.trim().isEmpty() || t1.toLowerCase().contains(filter.toLowerCase())) {
-                    final Preference preference = buildPackagePreferences(pm, pi);
-                    this.mFilterPreferenceScreen.addPreference(preference);
-                }
-            }
-        }
+//        private void filterPackagesPreferences(String filter, final MyApplication.AppSortBy sortBy, final MyApplication.AppOrderBy orderBy) {
+//            final Context context = MyApplication.getInstance().getApplicationContext();
+//            final PackageManager pm = context.getPackageManager();
+//            final List<PackageInfo> installedPackages = pm.getInstalledPackages(PackageManager.GET_META_DATA);
+//            Collections.sort(installedPackages, new Comparator<PackageInfo>() {
+//                @Override
+//                public int compare(PackageInfo o1, PackageInfo o2) {
+//                    String t1 = "";
+//                    String t2 = "";
+//                    switch (sortBy) {
+//                        case APPNAME:
+//                            t1 = o1.applicationInfo.loadLabel(pm).toString();
+//                            t2 = o2.applicationInfo.loadLabel(pm).toString();
+//                            break;
+//                        case PKGNAME:
+//                            t1 = o1.packageName;
+//                            t2 = o2.packageName;
+//                            break;
+//                    }
+//                    if (MyApplication.AppOrderBy.ASC.equals(orderBy))
+//                        return t1.compareTo(t2);
+//                    else
+//                        return t2.compareTo(t1);
+//                }
+//            });
+//
+//            final Map<String, Boolean> installedPackageMap = new HashMap<>();
+//            for (final PackageInfo pi : installedPackages) {
+//                // exclude self package
+//                if (pi.packageName.equals(MyApplication.getInstance().getPackageName())) {
+//                    continue;
+//                }
+//                boolean checked = this.mAllPackageInfoMap.containsKey(pi.packageName) ? this.mAllPackageInfoMap.get(pi.packageName) : false;
+//                installedPackageMap.put(pi.packageName, checked);
+//            }
+//            this.mAllPackageInfoMap.clear();
+//            this.mAllPackageInfoMap.putAll(installedPackageMap);
+//
+//            for (final PackageInfo pi : installedPackages) {
+//                // exclude self package
+//                if (pi.packageName.equals(MyApplication.getInstance().getPackageName())) {
+//                    continue;
+//                }
+//                String t1 = pi.applicationInfo.loadLabel(pm).toString();
+//                if (filter.trim().isEmpty() || t1.toLowerCase().contains(filter.toLowerCase())) {
+//                    final Preference preference = buildPackagePreferences(pm, pi);
+//                    this.mFilterPreferenceScreen.addPreference(preference);
+//                }
+//            }
+//        }
 
         private Preference buildPackagePreferences(final PackageManager pm, final PackageInfo pi) {
             final CheckBoxPreference prefCheck = new CheckBoxPreference(getActivity());
@@ -360,8 +363,8 @@ public class SettingsActivity extends AppCompatActivity {
             Preference.OnPreferenceClickListener click = new Preference.OnPreferenceClickListener() {
                 @Override
                 public boolean onPreferenceClick(Preference preference) {
-                    mAllPackageInfoMap.put(prefCheck.getSummary().toString(), prefCheck.isChecked());
-                    return false;
+                mAllPackageInfoMap.put(prefCheck.getSummary().toString(), prefCheck.isChecked());
+                return false;
                 }
             };
             prefCheck.setOnPreferenceClickListener(click);
@@ -472,5 +475,95 @@ public class SettingsActivity extends AppCompatActivity {
         }
     }
 
+    public static class AsyncTaskProgress extends AsyncTask<String, String, List<PackageInfo>> {
+
+        final PackageListFragment packageFragment;
+
+        public AsyncTaskProgress(PackageListFragment packageFragment) {
+            this.packageFragment = packageFragment;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            packageFragment.mFilterPreferenceScreen.addPreference(new ProgressPreference(packageFragment.getActivity()));
+        }
+
+        @Override
+        protected List<PackageInfo> doInBackground(String... params) {
+            return filterPackages(packageFragment.searchFilter, packageFragment.appSortBy, packageFragment.appOrderBy);
+        }
+
+        private List<PackageInfo> filterPackages(String filter, final MyApplication.AppSortBy sortBy, final MyApplication.AppOrderBy orderBy) {
+            final Context context = MyApplication.getInstance().getApplicationContext();
+            final PackageManager pm = context.getPackageManager();
+            final List<PackageInfo> installedPackages = pm.getInstalledPackages(PackageManager.GET_META_DATA);
+            Collections.sort(installedPackages, new Comparator<PackageInfo>() {
+                @Override
+                public int compare(PackageInfo o1, PackageInfo o2) {
+                    String t1 = "";
+                    String t2 = "";
+                    switch (sortBy) {
+                        case APPNAME:
+                            t1 = o1.applicationInfo.loadLabel(pm).toString();
+                            t2 = o2.applicationInfo.loadLabel(pm).toString();
+                            break;
+                        case PKGNAME:
+                            t1 = o1.packageName;
+                            t2 = o2.packageName;
+                            break;
+                    }
+                    if (MyApplication.AppOrderBy.ASC.equals(orderBy))
+                        return t1.compareTo(t2);
+                    else
+                        return t2.compareTo(t1);
+                }
+            });
+            final Map<String, Boolean> installedPackageMap = new HashMap<>();
+            for (final PackageInfo pi : installedPackages) {
+                // exclude self package
+                if (pi.packageName.equals(MyApplication.getInstance().getPackageName())) {
+                    continue;
+                }
+                boolean checked = packageFragment.mAllPackageInfoMap.containsKey(pi.packageName) ? packageFragment.mAllPackageInfoMap.get(pi.packageName) : false;
+                installedPackageMap.put(pi.packageName, checked);
+            }
+            packageFragment.mAllPackageInfoMap.clear();
+            packageFragment.mAllPackageInfoMap.putAll(installedPackageMap);
+            return installedPackages;
+        }
+
+        @Override
+        protected void onPostExecute(List<PackageInfo> installedPackages) {
+            final Context context = MyApplication.getInstance().getApplicationContext();
+            final PackageManager pm = context.getPackageManager();
+            packageFragment.mFilterPreferenceScreen.removeAll();
+            for (final PackageInfo pi : installedPackages) {
+                // exclude self package
+                if (pi.packageName.equals(MyApplication.getInstance().getPackageName())) {
+                    continue;
+                }
+                String t1 = pi.applicationInfo.loadLabel(pm).toString();
+                if (packageFragment.searchFilter.trim().isEmpty() || t1.toLowerCase().contains(packageFragment.searchFilter.toLowerCase())) {
+                    final Preference preference = packageFragment.buildPackagePreferences(pm, pi);
+                    packageFragment.mFilterPreferenceScreen.addPreference(preference);
+                }
+            }
+            return;
+        }
+
+        @Override
+        protected void onCancelled() {
+            super.onCancelled();
+            return;
+        }
+
+    }
+
+    protected static class ProgressPreference extends Preference {
+        public ProgressPreference(Context context){
+            super(context);
+            setLayoutResource(R.layout.preference_progress);
+        }
+    }
 }
 
