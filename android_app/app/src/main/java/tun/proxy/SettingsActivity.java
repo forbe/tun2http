@@ -29,6 +29,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class SettingsActivity extends AppCompatActivity {
     private static final String TAG = "SettingsActivity";
@@ -186,6 +188,8 @@ public class SettingsActivity extends AppCompatActivity {
         private final static String PREF_VPN_APPLICATION_SORTBY = "pref_vpn_application_app_sortby";
         private final static String PREF_VPN_APPLICATION_ORDERBY = "pref_vpn_application_app_orderby";
 
+        private final AsyncTaskProgress task;
+
         private MyApplication.VPNMode mode;
         private MyApplication.AppSortBy appSortBy = MyApplication.AppSortBy.APPNAME;
         private MyApplication.AppOrderBy appOrderBy = MyApplication.AppOrderBy.ASC;
@@ -194,6 +198,7 @@ public class SettingsActivity extends AppCompatActivity {
         public PackageListFragment(MyApplication.VPNMode mode) {
             super();
             this.mode = mode;
+            this.task = new AsyncTaskProgress(this);
         }
 
         @Override
@@ -264,14 +269,18 @@ public class SettingsActivity extends AppCompatActivity {
             storeSelectedPackageSet(selected);
 
             this.removeAllPreferenceScreen();
-            final AsyncTaskProgress task = new AsyncTaskProgress(this);
-            task.execute("");
+            //final AsyncTaskProgress task = new AsyncTaskProgress(this);
+            task.execute();
 //            this.filterPackagesPreferences(filter, sortBy, orderBy);
         }
 
         @Override
         public void onPause() {
             super.onPause();
+            if (this.task != null) {
+                this.task.cancel(true);
+            }
+
             Set<String> selected = this.getAllSelectedPackageSet();
             storeSelectedPackageSet(selected);
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(MyApplication.getInstance().getApplicationContext());
@@ -475,6 +484,11 @@ public class SettingsActivity extends AppCompatActivity {
         }
     }
 
+    /*
+    * AsyncTask
+    * https://developer.android.com/reference/android/os/AsyncTask
+    * Deprecated in API level R
+    * */
     public static class AsyncTaskProgress extends AsyncTask<String, String, List<PackageInfo>> {
 
         final PackageListFragment packageFragment;
@@ -512,6 +526,11 @@ public class SettingsActivity extends AppCompatActivity {
                             t2 = o2.packageName;
                             break;
                     }
+//                    try {
+//                        Thread.sleep(100);
+//                    } catch (InterruptedException e) {
+//                        e.printStackTrace();
+//                    }
                     if (MyApplication.AppOrderBy.ASC.equals(orderBy))
                         return t1.compareTo(t2);
                     else
@@ -520,6 +539,7 @@ public class SettingsActivity extends AppCompatActivity {
             });
             final Map<String, Boolean> installedPackageMap = new HashMap<>();
             for (final PackageInfo pi : installedPackages) {
+                if (isCancelled()) continue;
                 // exclude self package
                 if (pi.packageName.equals(MyApplication.getInstance().getPackageName())) {
                     continue;

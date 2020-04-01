@@ -111,5 +111,5 @@ Most of the code was created based on the following applications for creating ap
 
 ## Development environment
 
-* JRE(JDK) 1.8以上(Open JDK)
+* JRE(JDK) 1.8 or later(Open JDK)
 * AndroidStudio 3.6.1 (https://developer.android.com/studio/index.html)
