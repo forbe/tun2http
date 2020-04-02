@@ -270,7 +270,9 @@ public class SettingsActivity extends AppCompatActivity {
 
             this.removeAllPreferenceScreen();
             //final AsyncTaskProgress task = new AsyncTaskProgress(this);
-            task.execute();
+            if (task.getStatus() == AsyncTask.Status.PENDING) {
+                task.execute();
+            }
 //            this.filterPackagesPreferences(filter, sortBy, orderBy);
         }
 
@@ -574,6 +576,8 @@ public class SettingsActivity extends AppCompatActivity {
         @Override
         protected void onCancelled() {
             super.onCancelled();
+            packageFragment.mAllPackageInfoMap.clear();
+            packageFragment.mFilterPreferenceScreen.removeAll();
             return;
         }
 
