@@ -7,6 +7,7 @@ import android.content.SharedPreferences;
 import android.net.VpnService;
 import androidx.preference.PreferenceManager;
 import android.util.Log;
+import tun.proxy.R;
 
 import tun.proxy.service.Tun2HttpVpnService;
 
@@ -18,15 +19,15 @@ public class BootReceiver extends BroadcastReceiver {
             return;
         }
 
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         boolean isRunning = prefs.getBoolean(Tun2HttpVpnService.PREF_RUNNING, false);
         if (isRunning) {
             Intent prepare = VpnService.prepare(context);
             if (prepare == null) {
-                Log.d("Tun2Http.Boot", "Starting vpn");
+                Log.d(context.getString(R.string.app_name) + ".Boot", "Starting vpn");
                 Tun2HttpVpnService.start(context);
             } else {
-                Log.d("Tun2Http.Boot", "Not prepared");
+                Log.d(context.getString(R.string.app_name) + ".Boot", "Not prepared");
             }
         }
     }

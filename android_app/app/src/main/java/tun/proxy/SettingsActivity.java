@@ -430,7 +430,7 @@ public class SettingsActivity extends AppCompatActivity {
         }
 
         private void clearAllSelectedPackageSet() {
-            Set<String> selected = this.getFilterSelectedPackageSet();
+            final Set<String> selected = this.getFilterSelectedPackageSet();
             for (Map.Entry<String, Boolean> value : this.mAllPackageInfoMap
                     .entrySet()) {
                 if (value.getValue()) {
@@ -440,7 +440,7 @@ public class SettingsActivity extends AppCompatActivity {
         }
 
         private Set<String> getAllSelectedPackageSet() {
-            Set<String> selected = this.getFilterSelectedPackageSet();
+            final Set<String> selected = this.getFilterSelectedPackageSet();
             for (Map.Entry<String, Boolean> value : this.mAllPackageInfoMap.entrySet()) {
                 if (value.getValue()) {
                     selected.add(value.getKey());

@@ -42,7 +42,6 @@ public class MainActivity extends AppCompatActivity implements
     Button start;
     Button stop;
     EditText hostEditText;
-    MenuItem menuSetting;
     Handler statusHandler = new Handler();
 
     private Tun2HttpVpnService service;
@@ -83,9 +82,9 @@ public class MainActivity extends AppCompatActivity implements
         fragment.setArguments(args);
         fragment.setTargetFragment(caller, 0);
         getSupportFragmentManager().beginTransaction()
-                .replace(R.id.activity_settings, fragment)
-                .addToBackStack(null)
-                .commit();
+            .replace(R.id.activity_settings, fragment)
+            .addToBackStack(null)
+            .commit();
         setTitle(pref.getTitle());
         return true;
     }
@@ -116,9 +115,9 @@ public class MainActivity extends AppCompatActivity implements
                 break;
             case R.id.action_show_about:
                 new AlertDialog.Builder(this)
-                        .setTitle(getString(R.string.app_name) + getVersionName())
-                        .setMessage(R.string.app_name)
-                        .show();
+                    .setTitle(getString(R.string.app_name) + getVersionName())
+                    .setMessage(R.string.app_name)
+                    .show();
                 break;
             default:
                 return super.onOptionsItemSelected(item);
@@ -170,8 +169,8 @@ public class MainActivity extends AppCompatActivity implements
     Runnable statusRunnable = new Runnable() {
         @Override
         public void run() {
-            updateStatus();
-            statusHandler.post(statusRunnable);
+        updateStatus();
+        statusHandler.post(statusRunnable);
         }
     };
 
@@ -226,8 +225,8 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private void loadHostPort() {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        String proxyHost = prefs.getString(Tun2HttpVpnService.PREF_PROXY_HOST, "");
+        final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        final String proxyHost = prefs.getString(Tun2HttpVpnService.PREF_PROXY_HOST, "");
         int proxyPort = prefs.getInt(Tun2HttpVpnService.PREF_PROXY_PORT, 0);
 
         if (TextUtils.isEmpty(proxyHost)) {

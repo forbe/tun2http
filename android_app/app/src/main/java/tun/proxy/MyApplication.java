@@ -29,8 +29,8 @@ public class MyApplication extends Application {
     public enum AppFiltertBy {APPNAME, PKGNAME};
 
     public VPNMode loadVPNMode() {
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        String vpn_mode = sharedPreferences.getString(PREF_VPN_MODE, MyApplication.VPNMode.DISALLOW.name());
+        final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        final String vpn_mode = sharedPreferences.getString(PREF_VPN_MODE, MyApplication.VPNMode.DISALLOW.name());
         return VPNMode.valueOf(vpn_mode);
     }
 
@@ -43,7 +43,7 @@ public class MyApplication extends Application {
 
     public Set<String> loadVPNApplication(VPNMode mode) {
         final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        Set<String> preference = prefs.getStringSet(PREF_APP_KEY[mode.ordinal()], new HashSet<String>());
+        final Set<String> preference = prefs.getStringSet(PREF_APP_KEY[mode.ordinal()], new HashSet<String>());
         return preference;
     }
 

@@ -63,10 +63,10 @@ The application list can be sorted from the menu icon  (![Menu](images/Menu.png)
 * order by desc
   * Sorting in descending order
 
-* filter by asc
+* filter by app name
   * Search for the application name that contains the keyword you specified.
 
-* filter by desc
+* filter by package name
   * Search for the package name that contains the keyword you specified.
 
 * sort by app name
@@ -107,6 +107,9 @@ Display application version
 ## Operating environment
 
 * Android 5.0 (API Level 21) or later
+
+### ビルド
+ gradlew build
 
 ## base application
 

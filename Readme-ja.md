@@ -65,10 +65,10 @@ Disallowed Application と Allowed Application の２つのモードがありま
 * order by desc
   * 降順にソートします
 
-* filter by asc
+* filter by app name
   * アプリケーション名に指定したキーワードを含むものを検索します。
 
-* filter by desc
+* filter by package name
   * パッケージ名に指定したキーワードを含むものを検索します。
 
 * sort by app name
@@ -113,7 +113,7 @@ SSLを復号化するには、ローカルプロキシツールのRoot証明書�
 * Android 5.0 (API Level 21) 以降
 
 ### ビルド
- gradlew build    
+ gradlew build
 
 ## 謝辞
 
