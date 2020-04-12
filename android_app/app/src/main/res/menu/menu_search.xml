@@ -27,6 +27,7 @@
             android:orderInCategory="112"
             app:showAsAction="never" />
     </group>
+    <!-- sort by -->
     <item
         android:id="@+id/menu_sort_by"
         android:title="order by"
@@ -54,4 +55,34 @@
             </group>
         </menu>
     </item>
+    <!-- filter by -->
+    <item
+        android:id="@+id/menu_filter_by"
+        android:title="filter by"
+        android:orderInCategory="200"
+        app:showAsAction="never">
+        <menu>
+            <group
+                android:id="@+id/menu_filter_group"
+                android:checkableBehavior="single"
+                android:enabled="true"
+                android:menuCategory="container"
+                android:orderInCategory="210"
+                android:visible="true">
+                <item
+                    android:id="@+id/menu_filter_app_name"
+                    android:checked="true"
+                    android:title="filter by app name"
+                    android:orderInCategory="211"
+                    app:showAsAction="never" />
+                <item
+                    android:id="@+id/menu_filter_pkg_name"
+                    android:title="filter by package name"
+                    android:orderInCategory="212"
+                    app:showAsAction="never" />
+            </group>
+        </menu>
+    </item>
+
+
 </menu>

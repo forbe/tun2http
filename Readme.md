@@ -53,21 +53,27 @@ The default is **Disallowed Application** selected.
 ![Menu Settings](images/Menu-Settings-Search.png) / ![Menu Settings](images/Menu-Settings-SortBy.png)
 
 You can narrow down the applications from the search icon.(![Menu](images/Search.png))
-Only applications that contain the keyword specified in the application name are displayed.
+Only applications that contain the keyword specified in the application name or package name will be displayed.
 
 The application list can be sorted from the menu icon  (![Menu](images/Menu.png)) at the top of the screen.
-
-* sort by app name
-  * Sort application list by application name
-
-* sort by package name
-  * Sort application list by package name
 
 * order by asc
   * Sorting in ascending order
 
 * order by desc
   * Sorting in descending order
+
+* filter by asc
+  * Search for the application name that contains the keyword you specified.
+
+* filter by desc
+  * Search for the package name that contains the keyword you specified.
+
+* sort by app name
+  * Sort application list by application name
+
+* sort by package name
+  * Sort application list by package name
 
 ### MITM (SSL decrypt)
 

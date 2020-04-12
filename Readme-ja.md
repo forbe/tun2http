@@ -55,21 +55,27 @@ Disallowed Application と Allowed Application の２つのモードがありま
 ![Menu Settings](images/Menu-Settings-Search.png) / ![Menu Settings](images/Menu-Settings-SortBy.png)
 
 画面上部の検索アイコン(![Menu](images/Search.png))から、アプリケーションを絞り込めます。
-アプリケーション名に指定したキーワードを含む、アプリケーションのみが表示されます。
+アプリケーション名または、パッケージ名に指定したキーワードを含むアプリケーションのみが表示されます。
 
 プリケーションリストは、画面上部のメニューアイコン(![Menu](images/Menu.png))からソートできます。
-
-* sort by app name
-  * アプリケーション名でアプリケーションリストを並べ替えます。
-
-* sort by package name
-  * パッケージ名でアプリケーションリストを並べ替えます。
 
 * order by asc
   * 昇順にソートします
 
 * order by desc
   * 降順にソートします
+
+* filter by asc
+  * アプリケーション名に指定したキーワードを含むものを検索します。
+
+* filter by desc
+  * パッケージ名に指定したキーワードを含むものを検索します。
+
+* sort by app name
+  * アプリケーション名でアプリケーションリストを並べ替えます。
+
+* sort by package name
+  * パッケージ名でアプリケーションリストを並べ替えます。
 
 ### MITM (SSL 復号化)
 
@@ -105,6 +111,9 @@ SSLを復号化するには、ローカルプロキシツールのRoot証明書�
 ## 動作環境 
 
 * Android 5.0 (API Level 21) 以降
+
+### ビルド
+ gradlew build    
 
 ## 謝辞
 
