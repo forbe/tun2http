@@ -1,10 +1,35 @@
 <resources>
-    <string name="app_name">tun2http</string>
+    <string name="app_name">TunProxy</string>
+
+    <!-- Main Activity -->
     <string name="notify_title">Proxy is running</string>
     <string name="notify_msg">Proxy is running</string>
     <string name="start">Start</string>
     <string name="stop">Stop</string>
     <string name="msg_start_failed">Start failed</string>
-    <string name="host_hint">Proxy address (host:port)</string>
+    <string name="host_hint">Proxy address (ipv4:port)</string>
     <string name="enter_host">Enter valid ip v4 address</string>
+
+    <!-- Main menu -->
+    <string name="title_show_about">About</string>
+    <string name="title_activity_settings">Settings</string>
+
+    <!-- Category -->
+    <string name="search">Search</string>
+
+    <string name="pref_header_allowed_application_list">Allowed application list</string>
+    <string name="pref_header_disallowed_application_list">Disallowed application list</string>
+    <string name="pref_dialog_clear_all_application_msg">Clear all selections of Allowed / Disallowed application list</string>
+
+    <string name="pref_vpn_connection_mode">Allowed / Disallowed Application</string>
+    <string name="loading">Prease wait</string>
+    <string-array name="pref_vpn_connection_name">
+        <item>Disallowed Application</item>
+        <item>Allowed Application</item>
+    </string-array>
+    <string-array name="pref_vpn_connection_value">
+        <item>DISALLOW</item>
+        <item>ALLOW</item>
+    </string-array>
+
 </resources>
