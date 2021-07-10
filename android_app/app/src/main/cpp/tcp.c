@@ -504,8 +504,6 @@ jboolean handle_tcp(const struct arguments *args,
                     int uid,
                     const int epoll_fd) {
 
-
-
     // Get headers
     const uint8_t version = (*pkt) >> 4;
     const struct iphdr *ip4 = (struct iphdr *) pkt;
@@ -591,7 +589,7 @@ jboolean handle_tcp(const struct arguments *args,
             uint16_t mss = get_default_mss(version);
             uint8_t ws = 0;
             int optlen = tcpoptlen;
-            uint8_t *options = tcpoptions;
+            const uint8_t * options = tcpoptions;
             while (optlen > 0) {
                 uint8_t kind = *options;
                 uint8_t len = *(options + 1);
@@ -732,7 +730,7 @@ jboolean handle_tcp(const struct arguments *args,
             if (cur->tcp.connect_sent == TCP_CONNECT_NOT_SENT) {
                 if (len > 0) {
                     char buffer[512];
-                    sprintf(buffer, "CONNECT %s:443 HTTP/1.0\r\n\r\n", cur->tcp.hostname);
+                    sprintf(buffer, "CONNECT %s:%d HTTP/1.0\r\n\r\n", cur->tcp.hostname, rport);
 
                     ssize_t sent = send(cur->socket, buffer, strlen(buffer), MSG_NOSIGNAL);
                     if (sent < 0) {
