@@ -7,7 +7,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.os.AsyncTask;
+//import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import androidx.appcompat.app.ActionBar;
@@ -29,8 +29,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+
+import tun.utils.ProgressTask;
 
 public class SettingsActivity extends AppCompatActivity {
     private static final String TAG = "SettingsActivity";
@@ -285,7 +285,7 @@ public class SettingsActivity extends AppCompatActivity {
 
             this.removeAllPreferenceScreen();
 
-            if (task != null && task.getStatus() == AsyncTask.Status.PENDING) {
+            if (task != null && task.getStatus() == ProgressTask.Status.PENDING) {
                 task.execute();
             }
             else {
@@ -522,7 +522,7 @@ public class SettingsActivity extends AppCompatActivity {
     * https://developer.android.com/reference/android/os/AsyncTask
     * Deprecated in API level R
     * */
-    public static class AsyncTaskProgress extends AsyncTask<String, String, List<PackageInfo>> {
+    public static class AsyncTaskProgress extends ProgressTask<String, String, List<PackageInfo>> {
 
         final PackageListFragment packageFragment;
 

@@ -22,6 +22,7 @@ import androidx.preference.PreferenceManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
@@ -42,7 +43,7 @@ public class MainActivity extends AppCompatActivity implements
     Button start;
     Button stop;
     EditText hostEditText;
-    Handler statusHandler = new Handler();
+    Handler statusHandler = new Handler(Looper.getMainLooper());
 
     private Tun2HttpVpnService service;
 
