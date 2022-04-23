@@ -125,4 +125,4 @@ SSLを復号化するには、ローカルプロキシツールのRoot証明書�
 ## 開発環境
 
 * JRE(JDK) 1.8以上(Open JDK)
-* AndroidStudio 3.6.1 (https://developer.android.com/studio/index.html)
+* AndroidStudio 2021.1.1 (https://developer.android.com/studio/index.html)
