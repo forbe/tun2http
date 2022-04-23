@@ -265,7 +265,7 @@ void check_tcp_socket(const struct arguments *args,
         if (s->tcp.state == TCP_LISTEN) {
             // Check socket connect
             if (ev->events & EPOLLIN) {
-                uint8_t buffer[512];
+                char buffer[512];
                 ssize_t bytes = recv(s->socket, buffer, 12, 0);
                 if (bytes < 0) {
                     log_android(ANDROID_LOG_ERROR, "%s recv SOCKS5 error %d: %s",
@@ -274,14 +274,14 @@ void check_tcp_socket(const struct arguments *args,
                 } else {
                     if (s->tcp.connect_sent == TCP_CONNECT_SENT) {
                         buffer[bytes] = '\0';
-                        if (strcmp(buffer, "HTTP/1.0 200") == 0 || strcmp(buffer, "HTTP/1.1 200") == 0) {
                             s->tcp.connect_sent = TCP_CONNECT_ESTABLISHED;
                             while (recv(s->socket, buffer, sizeof(buffer), 0) > 0) {}
                             s->tcp.state = TCP_SYN_RECV;
                         } else {
                             write_rst(args, &s->tcp);
+                        }                        if (strcmp(buffer, "HTTP/1.0 200") == 0 || strcmp(buffer, "HTTP/1.1 200") == 0) {
+
                         }
-                    }
                 }
             } else {
                 s->tcp.remote_seq++; // remote SYN
@@ -504,8 +504,6 @@ jboolean handle_tcp(const struct arguments *args,
                     int uid,
                     const int epoll_fd) {
 
-
-
     // Get headers
     const uint8_t version = (*pkt) >> 4;
     const struct iphdr *ip4 = (struct iphdr *) pkt;
@@ -591,7 +589,7 @@ jboolean handle_tcp(const struct arguments *args,
             uint16_t mss = get_default_mss(version);
             uint8_t ws = 0;
             int optlen = tcpoptlen;
-            uint8_t *options = tcpoptions;
+            const uint8_t * options = tcpoptions;
             while (optlen > 0) {
                 uint8_t kind = *options;
                 uint8_t len = *(options + 1);
@@ -731,8 +729,8 @@ jboolean handle_tcp(const struct arguments *args,
             }
             if (cur->tcp.connect_sent == TCP_CONNECT_NOT_SENT) {
                 if (len > 0) {
-                    uint8_t buffer[512];
-                    sprintf(buffer, "CONNECT %s:443 HTTP/1.0\r\n\r\n", cur->tcp.hostname);
+                    char buffer[512];
+                    sprintf(buffer, "CONNECT %s:%d HTTP/1.0\r\n\r\n", cur->tcp.hostname, rport);
 
                     ssize_t sent = send(cur->socket, buffer, strlen(buffer), MSG_NOSIGNAL);
                     if (sent < 0) {
@@ -956,6 +954,7 @@ void queue_tcp(const struct arguments *args,
                 free(s->data);
                 s->data = malloc(datalen);
                 memcpy(s->data, data, datalen);
+                s->len = datalen;
             } else
                 log_android(ANDROID_LOG_ERROR, "%s segment larger %u..%u < %u",
                             session,
