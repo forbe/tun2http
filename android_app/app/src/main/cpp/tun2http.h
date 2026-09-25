@@ -1,6 +1,7 @@
 #include <jni.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <ctype.h>
 #include <time.h>
 #include <unistd.h>
@@ -55,6 +56,8 @@
 #define TCP_CONNECT_NOT_SENT -1
 #define TCP_CONNECT_SENT 0
 #define TCP_CONNECT_ESTABLISHED 1
+#define SOCKS5_STATE_GREETING 2
+#define SOCKS5_STATE_CONNECT  3
 
 #define MTU 10000
 
@@ -66,6 +69,7 @@ struct arguments {
     jint rcode;
     char proxyIp[128];
     int proxyPort;
+    jboolean isSocks5;
 };
 
 struct allowed {
@@ -169,6 +173,9 @@ struct tcp_session {
 
     char hostname[512];
     int connect_sent;
+    uint8_t socks5_state;
+    uint8_t is_http;
+    uint8_t is_tls;
 };
 
 struct ng_session {
@@ -207,16 +214,16 @@ struct ip6_hdr_pseudo {
 struct dns_header {
     uint16_t id; // identification number
 # if __BYTE_ORDER == __LITTLE_ENDIAN
-    uint16_t rd :1; // recursion desired
-    uint16_t tc :1; // truncated message
-    uint16_t aa :1; // authoritive answer
-    uint16_t opcode :4; // purpose of message
-    uint16_t qr :1; // query/response flag
-    uint16_t rcode :4; // response code
-    uint16_t cd :1; // checking disabled
-    uint16_t ad :1; // authenticated data
-    uint16_t z :1; // its z! reserved
-    uint16_t ra :1; // recursion available
+    uint16_t rd: 1; // recursion desired
+    uint16_t tc: 1; // truncated message
+    uint16_t aa: 1; // authoritive answer
+    uint16_t opcode: 4; // purpose of message
+    uint16_t qr: 1; // query/response flag
+    uint16_t rcode: 4; // response code
+    uint16_t cd: 1; // checking disabled
+    uint16_t ad: 1; // authenticated data
+    uint16_t z: 1; // its z! reserved
+    uint16_t ra: 1; // recursion available
 #elif __BYTE_ORDER == __BIG_ENDIAN
     uint16_t qr :1; // query/response flag
     uint16_t opcode :4; // purpose of message

@@ -1,1 +1,4 @@
 /build
+.cxx
+.externalNativeBuild
+local.properties

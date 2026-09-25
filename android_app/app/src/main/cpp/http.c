@@ -13,9 +13,9 @@
 
 static const char http_503[] =
         "HTTP/1.1 503 Service Temporarily Unavailable\r\n"
-                "Content-Type: text/html\r\n"
-                "Connection: close\r\n\r\n"
-                "Backend not available";
+        "Content-Type: text/html\r\n"
+        "Connection: close\r\n\r\n"
+        "Backend not available";
 
 
 /*
@@ -34,8 +34,7 @@ static const char http_503[] =
 
 #include "tun2http.h"
 
-int
-get_header(const char *header, const char *data, size_t data_len, char *value) {
+int get_header(const char *header, const char *data, size_t data_len, char *value) {
     int len, header_len;
 
     header_len = strlen(header);
@@ -64,8 +63,7 @@ get_header(const char *header, const char *data, size_t data_len, char *value) {
     return -2;
 }
 
-int
-next_header(const char **data, size_t *len) {
+int next_header(const char **data, size_t *len) {
     int header_len;
 
     /* perhaps we can optimize this to reuse the value of header_len, rather
@@ -84,8 +82,9 @@ next_header(const char **data, size_t *len) {
     header_len = 0;
     while (*len > header_len + 1
            && (*data)[header_len] != '\r'
-           && (*data)[header_len + 1] != '\n')
+           && (*data)[header_len + 1] != '\n') {
         header_len++;
+    }
 
     return header_len;
 }
@@ -114,12 +113,12 @@ uint8_t *find_data(uint8_t *data, size_t data_len, char *value) {
     return 0;
 }
 
-uint_t patch_buffer[2*MTU];
+uint8_t patch_buffer[2 * MTU];
 
 uint8_t *patch_http_url(uint8_t *data, size_t *data_len) {
     __android_log_print(ANDROID_LOG_VERBOSE, LOG_TAG, "patch_http_url start");
 
-    char hostname[1024];
+    char hostname[512];
     uint8_t *host = find_data(data, *data_len, "Host: ");
     size_t length = 0;
     if (host) {
@@ -136,38 +135,29 @@ uint8_t *patch_http_url(uint8_t *data, size_t *data_len) {
 
     __android_log_print(ANDROID_LOG_VERBOSE, LOG_TAG, "patch_http_url find word");
 
-    //GET POST PUT DELETE HEAD OPTIONS PATCH
-    char *word;
-    uint8_t *pos = 0;
-    if (pos = find_data(data, *data_len, "GET ")) {
-        word = "GET ";
-    } else if (pos = find_data(data, *data_len, "POST ")) {
-        word = "POST ";
-    } else if (pos = find_data(data, *data_len, "PUT ")) {
-        word = "PUT ";
-    } else if (pos = find_data(data, *data_len, "DELETE ")) {
-        word = "DELETE ";
-    } else if (pos = find_data(data, *data_len, "HEAD ")) {
-        word = "HEAD ";
-    } else if (pos = find_data(data, *data_len, "OPTIONS ")) {
-        word = "OPTIONS ";
-    } else if (pos = find_data(data, *data_len, "PATCH ")) {
-        word = "PATCH ";
+    size_t word_len = 0;
+    while (word_len < *data_len && data[word_len] != ' ' && data[word_len] != '\r' &&
+           data[word_len] != '\n') {
+        word_len++;
     }
 
-    if (!pos) {
-        LOG("patch_http_url no word");
+    if (word_len == 0 || word_len >= *data_len || data[word_len] != ' ') {
+        LOG("patch_http_url no method space");
         return 0;
     }
 
+    if (word_len == strlen("CONNECT") && memcmp(data, "CONNECT", 7) == 0) {
+        LOG("patch_http_url skip CONNECT");
+        return 0;
+    }
 
-    size_t http_len = strlen("http://");
-    size_t word_len = strlen(word);
-    size_t pos1 = pos - data + word_len;
+    size_t pos1 = word_len + 1;
 
     LOG("patch_http_url word found");
 
-    if (data[pos1] == 'h' &&
+    size_t http_len = strlen("http://");
+    if (pos1 + http_len <= *data_len &&
+        data[pos1] == 'h' &&
         data[pos1 + 1] == 't' &&
         data[pos1 + 2] == 't' &&
         data[pos1 + 3] == 'p' &&
@@ -179,8 +169,8 @@ uint8_t *patch_http_url(uint8_t *data, size_t *data_len) {
 
     uint8_t *new_data = &patch_buffer[0];
     LOG("patch_http_url start patch");
-    memcpy(new_data, data, pos1);
 
+    memcpy(new_data, data, pos1);
     memcpy(new_data + pos1, "http://", http_len);
     memcpy(new_data + pos1 + http_len, hostname, length);
     memcpy(new_data + pos1 + http_len + length, data + pos1, *data_len - pos1);

@@ -1,0 +1,9 @@
+*.iml
+.DS_Store
+local.properties
+/.gradle
+/.idea
+/.artifacts
+/.idea
+/build
+*.zip
